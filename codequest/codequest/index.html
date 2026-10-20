@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Code Quest - Quiz de tecnologia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<!-- Navegação provisória por âncoras (#id). O JavaScript vai substituir isso depois. -->
+<main class="palco">
+
+  <!-- 1. Identificação -->
+  <section class="tela" id="inicio" aria-labelledby="t-inicio">
+    <h1 id="t-inicio" class="logo"><img src="assets/titulo.png" alt="Code Quest"></h1>
+    <p class="subtitulo">Quiz de tecnologia</p>
+    <div class="nome">
+      <img class="mario" src="assets/mario.png" alt="">
+      <img class="cano-p" src="assets/cano-pequeno.png" alt="">
+      <label for="nome">Digite seu nome para começar:</label>
+      <img class="grama" src="assets/grama.png" alt="">
+      <input id="nome" type="text" maxlength="20" autocomplete="off">
+    </div>
+    <a class="img-btn jogar" href="#temas"><img src="assets/btn-jogar.png" alt="Jogar"></a>
+    <a class="img-btn acess" href="#acessibilidade"><img src="assets/btn-acessibilidade.png" alt="Acessibilidade"></a>
+  </section>
+
+  <!-- 2. Categoria -->
+  <section class="tela" id="temas" aria-labelledby="t-temas">
+    <h2 id="t-temas" class="titulo">Selecione o tema do seu desafio!</h2>
+    <div class="temas">
+      <button class="tema" type="button"><span class="rotulo">Cibersegurânça</span><span class="bloco"><img src="assets/ico-ciber.png" alt=""></span></button>
+      <button class="tema" type="button"><span class="rotulo">Front-End</span><span class="bloco"><img src="assets/ico-front.png" alt=""></span></button>
+      <button class="tema" type="button"><span class="rotulo">Back-End</span><span class="bloco"><img src="assets/ico-back.png" alt=""></span></button>
+      <button class="tema" type="button"><span class="rotulo">I.A</span><span class="bloco"><img src="assets/ico-ia.png" alt=""></span></button>
+      <button class="tema" type="button"><span class="rotulo">História da Computação</span><span class="bloco"><img src="assets/ico-historia.png" alt=""></span></button>
+      <button class="tema" type="button"><span class="rotulo">Aleatório</span><span class="bloco"><img src="assets/ico-aleatorio.png" alt=""></span></button>
+    </div>
+    <a class="img-btn nav voltar" href="#inicio"><img src="assets/btn-voltar.png" alt="Voltar"></a>
+    <a class="img-btn nav avancar" href="#acerto"><img src="assets/btn-avancar.png" alt="Avançar"></a>
+  </section>
+
+  <!-- 3. Questão: resposta correta -->
+  <section class="tela questao" id="acerto" aria-label="Pergunta 1 de 10">
+    <p class="contador">Pergunta 1 de 10</p>
+    <img class="progresso" src="assets/progresso-1.png" alt="Progresso: pergunta 1 de 10">
+    <h2 class="enunciado">Qual linguagem é utilizada principalmente para criar interatividade em páginas web?</h2>
+    <ul class="alternativas">
+      <li><button class="alt" type="button"><img src="assets/letra-a.png" alt="A"><span>Python</span></button></li>
+      <li><button class="alt" type="button"><img src="assets/letra-b.png" alt="B"><span>JavaScript</span></button></li>
+      <li><button class="alt" type="button"><img src="assets/letra-c.png" alt="C"><span>C++</span></button></li>
+      <li><button class="alt" type="button"><img src="assets/letra-d.png" alt="D"><span>Java</span></button></li>
+    </ul>
+    <aside class="painel feedback certo" role="status">
+      <h3>Resposta Correta!</h3>
+      <button class="x" type="button" aria-label="Fechar explicação"><img src="assets/check-off.png" alt=""></button>
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+      <a class="fonte" href="#">Link da fonte</a>
+    </aside>
+    <a class="img-btn nav avancar" href="#erro"><img src="assets/btn-avancar.png" alt="Avançar"></a>
+  </section>
+
+  <!-- 4. Questão: resposta incorreta -->
+  <section class="tela questao" id="erro" aria-label="Pergunta 1 de 10">
+    <p class="contador">Pergunta 1 de 10</p>
+    <img class="progresso" src="assets/progresso-1.png" alt="Progresso: pergunta 1 de 10">
+    <h2 class="enunciado">Qual linguagem é utilizada principalmente para criar interatividade em páginas web?</h2>
+    <ul class="alternativas">
+      <li><button class="alt" type="button"><img src="assets/letra-a.png" alt="A"><span>Python</span></button></li>
+      <li><button class="alt" type="button"><img src="assets/letra-b.png" alt="B"><span>JavaScript</span></button></li>
+      <li><button class="alt" type="button"><img src="assets/letra-c.png" alt="C"><span>C++</span></button></li>
+      <li><button class="alt" type="button"><img src="assets/letra-d.png" alt="D"><span>Java</span></button></li>
+    </ul>
+    <aside class="painel feedback errado" role="status">
+      <h3>Resposta Incorreta!</h3>
+      <button class="x" type="button" aria-label="Fechar explicação"><img src="assets/check-off.png" alt=""></button>
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+      <a class="fonte" href="#">Link da fonte</a>
+    </aside>
+    <a class="img-btn nav avancar" href="#resultados"><img src="assets/btn-avancar.png" alt="Avançar"></a>
+  </section>
+
+  <!-- 5. Resultados -->
+  <section class="tela" id="resultados" aria-labelledby="t-res">
+    <div class="trofeu"><img class="moeda" src="assets/moeda.png" alt=""><img src="assets/trofeu.png" alt=""></div>
+    <h2 id="t-res" class="fim">Quiz Finalizado!</h2>
+    <p class="parabens">Parabéns, você concluiu!</p>
+    <div class="stat" style="left:21.2cqw"><span class="rot">Pontuação</span><span class="val">8/10</span><div class="cano"></div></div>
+    <div class="stat" style="left:50cqw"><span class="rot">Aproveitamento</span><span class="val verde">80%</span><div class="cano"></div></div>
+    <div class="stat" style="left:77.4cqw"><span class="rot">Tempo</span><span class="val azul">05:12</span><div class="cano"></div></div>
+    <a class="img-btn nav voltar" href="#erro"><img src="assets/btn-voltar.png" alt="Voltar"></a>
+    <a class="img-btn nav avancar" href="#ranking"><img src="assets/btn-avancar.png" alt="Avançar"></a>
+  </section>
+
+  <!-- 6. Ranking -->
+  <section class="tela" id="ranking" aria-labelledby="t-rank">
+    <div class="painel lista">
+      <h2 id="t-rank">RANKING</h2>
+      <ol class="rank" tabindex="0" aria-label="Lista de jogadores">
+        <li><span>Nome do jogador</span><span>Pontuação</span></li>
+        <li><span>Nome do jogador</span><span>Pontuação</span></li>
+        <li><span>Nome do jogador</span><span>Pontuação</span></li>
+        <li><span>Nome do jogador</span><span>Pontuação</span></li>
+        <li><span>Nome do jogador</span><span>Pontuação</span></li>
+        <li><span>Nome do jogador</span><span>Pontuação</span></li>
+        <li><span>Nome do jogador</span><span>Pontuação</span></li>
+        <li><span>Nome do jogador</span><span>Pontuação</span></li>
+        <li><span>Nome do jogador</span><span>Pontuação</span></li>
+        <li><span>Nome do jogador</span><span>Pontuação</span></li>
+      </ol>
+    </div>
+    <div class="lugar p2"><span class="nm">Nome do jogador</span><span class="medalha prata">2</span><div class="cano"></div></div>
+    <div class="lugar p1"><span class="nm">Nome do jogador</span><span class="medalha ouro">1</span><div class="cano"></div></div>
+    <div class="lugar p3"><span class="nm">Nome do jogador</span><span class="medalha bronze">3</span><div class="cano"></div></div>
+    <a class="img-btn nav voltar" href="#resultados"><img src="assets/btn-voltar.png" alt="Voltar"></a>
+    <a class="img-btn nav avancar" href="#inicio"><img src="assets/btn-avancar.png" alt="Avançar"></a>
+  </section>
+
+  <!-- 7. Acessibilidade -->
+  <section class="tela" id="acessibilidade" aria-labelledby="t-ac">
+    <div class="painel acess-painel">
+      <h2 id="t-ac">ACESSIBILIDADE</h2>
+      <ul class="opcoes">
+        <li>
+          <div><strong>Tamanho do texto</strong><small>Aumente ou diminua o tamanho do texto.</small></div>
+          <div class="az"><button type="button" class="mini">A-</button><button type="button" class="mini ativo">A+</button></div>
+        </li>
+        <li>
+          <label for="contraste"><strong>Alto contraste</strong><small>Aumenta o contraste das cores.</small></label>
+          <input id="contraste" class="chk" type="checkbox" checked>
+        </li>
+        <li>
+          <label for="animacoes"><strong>Reduzir animações</strong><small>Remove animações e transições.</small></label>
+          <input id="animacoes" class="chk" type="checkbox" checked>
+        </li>
+        <li>
+          <label for="leitor"><strong>Leitor de tela</strong><small>Otimiza elementos para leitores de tela.</small></label>
+          <input id="leitor" class="chk" type="checkbox" checked>
+        </li>
+      </ul>
+      <div class="acoes">
+        <button class="img-btn" type="button"><img src="assets/btn-restaurar.png" alt="Restaurar"></button>
+        <a class="img-btn" href="#inicio"><img src="assets/btn-fechar.png" alt="Fechar"></a>
+      </div>
+    </div>
+  </section>
+
+</main>
+</body>
+</html>
