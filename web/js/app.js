@@ -90,9 +90,21 @@ async function chamarBack(caminho, corpo, metodo = corpo ? 'POST' : 'GET') {
     },
     body: corpo && JSON.stringify(corpo)
   });
+  // 401 = token vencido (o do Supabase dura 1h) ou inválido: sai da conta e
+  // leva ao login. O erro marcado avisa quem chamou para não mostrar nada
+  if (resposta.status === 401) {
+    sairPorSessaoExpirada();
+    throw Object.assign(new Error('Sessão expirada'), { sessaoExpirada: true });
+  }
   const dados = await resposta.json();
   if (!resposta.ok) throw new Error(dados.erro);
   return dados;
+}
+
+function sairPorSessaoExpirada() {
+  localStorage.removeItem('token');
+  mostrarTela('tela-login');
+  mostrarErro(el('form-login'), 'Sua sessão expirou. Entre novamente.');
 }
 
 // Saudação da tela de temas. textContent: o username vem do banco e nunca deve virar HTML
@@ -263,6 +275,7 @@ document.getElementById('form-login').addEventListener('submit', async (evento) 
       mostrarTela('tela-temas');
     });
   } catch (erro) {
+    if (erro.sessaoExpirada) return; // já foi para o login com o aviso
     mostrarErro(form, erro.message);
   }
 });
@@ -290,6 +303,7 @@ document.getElementById('form-cadastro').addEventListener('submit', async (event
       mostrarTela('tela-temas');
     });
   } catch (erro) {
+    if (erro.sessaoExpirada) return; // já foi para o login com o aviso
     mostrarErro(form, erro.message);
   }
 });
@@ -325,6 +339,7 @@ async function iniciarQuiz(categoria) {
       mostrarTela('tela-quiz');
     });
   } catch (erro) {
+    if (erro.sessaoExpirada) return; // já foi para o login com o aviso
     el('erro-temas').textContent = erro.message;
     mostrarTela('tela-temas');
   }
@@ -403,6 +418,7 @@ async function responder() {
     }
     mostrarCorrecao(gabarito);
   } catch (erro) {
+    if (erro.sessaoExpirada) return; // já foi para o login com o aviso
     el('quiz-erro').textContent = erro.message;
   } finally {
     quiz.enviando = false;
@@ -526,6 +542,7 @@ async function carregarRanking(categoria) {
       );
     });
   } catch (erro) {
+    if (erro.sessaoExpirada) return; // já foi para o login com o aviso
     el('erro-ranking').textContent = erro.message;
   } finally {
     el('ranking-lista').removeAttribute('aria-busy');
@@ -598,6 +615,7 @@ el('botao-perfil').addEventListener('click', async () => {
       mostrarTela('tela-perfil');
     });
   } catch (erro) {
+    if (erro.sessaoExpirada) return; // já foi para o login com o aviso
     el('erro-temas').textContent = erro.message;
   }
 });
@@ -660,6 +678,7 @@ el('form-perfil').addEventListener('submit', async (evento) => {
       anunciar('Nome salvo!');
     });
   } catch (erro) {
+    if (erro.sessaoExpirada) return; // já foi para o login com o aviso
     mostrarErro(form, erro.message);
   }
 });
@@ -684,7 +703,8 @@ async function iniciar() {
       mostrarBoasVindas((await resposta.json()).username);
       return mostrarTela('tela-temas');
     }
-    localStorage.removeItem('token');
+    // Voltou depois de mais de 1h: avisa por que caiu no login
+    return sairPorSessaoExpirada();
   }
   mostrarTela('tela-login');
 }
