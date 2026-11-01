@@ -80,10 +80,13 @@ Para rodar o front e a API em endereços diferentes, abra a pasta `web/` com o L
 |---|---|---|---|
 | GET | `/api/health` | — | Confirma que o servidor está no ar |
 | GET | `/api/config` | — | Devolve a URL e a anon key do Supabase para o front |
-| GET | `/api/me` | Bearer | Dados do usuário logado, ou `401` |
+| GET | `/api/me` | Bearer | Dados do usuário logado (id, e-mail e username), ou `401` |
+| GET | `/api/perfil` | Bearer | Username e a melhor partida em cada tema |
 | POST | `/api/perfil` | Bearer | Cria o username (`{ username }`) |
+| PATCH | `/api/perfil` | Bearer | Troca o username (`{ username }`) |
 | POST | `/api/partidas` | Bearer | Começa uma partida (`{ categoria }`) e devolve as perguntas embaralhadas, **sem gabarito** |
 | POST | `/api/respostas` | Bearer | Grava a resposta (`{ partida_id, pergunta_id, escolhidas }`) e só então devolve o gabarito |
+| GET | `/api/ranking?categoria=IA` | Bearer | Os 10 melhores jogadores do tema |
 
 Os erros vêm em JSON (`{ "erro": "mensagem" }`) com o status HTTP correto.
 
@@ -118,10 +121,10 @@ api/
 ├── package.json       # só scripts (start/dev), sem dependências
 └── vercel.json        # deploy da API na Vercel
 web/
-├── index.html         # todas as telas (login, cadastro, temas, quiz, resultado)
+├── index.html         # todas as telas (login, cadastro, temas, ranking, perfil, quiz, resultado)
 ├── css/style.css      # mobile-first
 ├── js/config.js       # endereço da API
-├── js/app.js          # troca de telas, login e lógica do quiz
+├── js/app.js          # troca de telas, login, quiz, ranking e perfil
 └── assets/            # pixel art (sprites, painéis, ícones, medalhas)
 supabase/
 └── migrations/        # schema e políticas RLS
@@ -133,6 +136,7 @@ supabase/
 - **Botões em sprite**: cada PNG tem o quadro normal e o pressionado; a animação de hover é só CSS, trocando o `background-position`.
 - **Painéis e alternativas** usam `border-image` (9-slice): os cantos da pixel art nunca esticam, em qualquer tamanho.
 - No desktop, o quiz usa duas colunas para caber na tela sem rolagem.
+- No celular, os botões das telas de temas e do quiz ficam fixos no fundo da tela.
 
 ## Problemas comuns
 
