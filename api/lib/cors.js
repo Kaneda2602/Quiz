@@ -8,7 +8,7 @@ function liberarCors(req, res) {
   if (!ORIGENS.includes(origem)) return;
 
   res.setHeader('Access-Control-Allow-Origin', origem);
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type');
   res.setHeader('Vary', 'Origin');
 }

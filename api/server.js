@@ -8,12 +8,16 @@ const { log, logErro, logRequisicao } = require('./lib/log');
 
 const PORTA = process.env.PORT || 3000;
 
+const perfil = require('./rotas/perfil');
+
 // "MÉTODO /caminho" -> função da rota
 const ROTAS = {
   'GET /api/health': require('./rotas/health'),
   'GET /api/config': require('./rotas/config'),
   'GET /api/me': require('./rotas/me'),
-  'POST /api/perfil': require('./rotas/perfil'),
+  'GET /api/perfil': perfil.buscar,
+  'POST /api/perfil': perfil.criar,
+  'PATCH /api/perfil': perfil.alterar,
   'POST /api/partidas': require('./rotas/partidas'),
   'POST /api/respostas': require('./rotas/respostas'),
   'GET /api/ranking': require('./rotas/ranking')
