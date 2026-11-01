@@ -1,0 +1,614 @@
+/* Mobile-first: estilos base para telas pequenas, media queries só aumentam */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+}
+
+body {
+  min-height: 100vh;
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  overflow-x: hidden;
+  font-family: "Press Start 2P", monospace;
+  font-size: 12px;
+  background: #5aa9ec url("../assets/background.png") center bottom / cover
+    no-repeat fixed;
+}
+
+/* Pixel art nítida ao ampliar */
+img,
+.botao,
+.tema,
+.caixa,
+.progresso {
+  image-rendering: pixelated;
+}
+
+.titulo {
+  width: min(90vw, 532px);
+}
+
+/* Texto branco com borda preta (reutilizável) */
+/* Contorno contínuo (sem falhas como no text-shadow) e em "em", então
+   acompanha o tamanho da fonte. O traço é centrado na letra e o
+   paint-order desenha ele ATRÁS do preenchimento: só a metade de fora aparece. */
+.texto-borda {
+  color: #fff;
+  -webkit-text-stroke: 0.5em #000;
+  paint-order: stroke fill;
+}
+
+h1 {
+  font-size: 16px;
+  text-align: center;
+  line-height: 1.5;
+}
+
+/* Telas */
+.tela {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+/* display:flex acima anularia o atributo hidden */
+.tela[hidden] {
+  display: none;
+}
+
+/* Botões em sprite: quadro de cima = normal, de baixo = pressionado.
+   O pressionado é mais baixo, então os dois são alinhados pela BASE:
+   o botão fica fixo no chão e afunda, em vez de subir.
+   A animação é só trocar o background-position.
+
+   Variáveis em pixels do PNG original:
+   --largura / --img-h       tamanho do PNG
+   --altura                  altura visível do botão (o quadro normal)
+   --topo / --topo-pressionado  linha do PNG que aparece no topo do botão */
+.botao {
+  --largura: 275;
+  --img-h: 196;
+  --altura: 89;
+  --topo: 9;
+  --topo-pressionado: 98;
+
+  width: min(80vw, calc(var(--largura) * 1px));
+  aspect-ratio: var(--largura) / var(--altura);
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  background-color: transparent;
+  background-repeat: no-repeat;
+  /* PNG inteiro proporcional à altura visível do botão */
+  background-size: 100% calc(var(--img-h) / var(--altura) * 100%);
+  /* Em %, a posição y = linha do topo / (altura do PNG - altura visível) */
+  background-position: 0
+    calc(var(--topo) / (var(--img-h) - var(--altura)) * 100%);
+}
+
+.botao:hover,
+.botao:active,
+.botao:focus-visible {
+  background-position: 0
+    calc(var(--topo-pressionado) / (var(--img-h) - var(--altura)) * 100%);
+}
+
+/* login, avançar e sair usam os valores padrão acima */
+.botao-login {
+  background-image: url("../assets/sprites/login.png");
+}
+.botao-avancar {
+  background-image: url("../assets/sprites/avancar.png");
+}
+.botao-sair {
+  background-image: url("../assets/sprites/sair.png");
+}
+.botao-voltar {
+  background-image: url("../assets/sprites/voltar.png");
+  --largura: 274;
+}
+.botao-cadastro {
+  background-image: url("../assets/temas/cadastro.png");
+  --largura: 287;
+  --img-h: 205;
+  --altura: 93;
+  --topo: 10;
+  --topo-pressionado: 103;
+}
+
+/* Botões lado a lado (Voltar | Avançar): dividem a largura, até o tamanho original */
+.acoes {
+  width: min(100%, 580px);
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+
+.acoes .botao {
+  flex: 1;
+  width: auto;
+  max-width: calc(var(--largura) * 1px);
+}
+
+/* Painel (formulários, pergunta, correção, resultado) em 9-slice:
+   o border-image corta caixa_p.png em 9 pedaços. Os cantos (com os parafusos,
+   que vão até 109px no PNG) ficam sempre do mesmo tamanho; só as bordas lisas
+   e o miolo esticam. Assim o painel não deforma em nenhum tamanho.
+   120 = onde cortar no PNG | fill = usa o miolo como fundo | 32px = tamanho do canto na tela */
+.caixa {
+  width: min(100%, 420px);
+  padding: 4px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  border: 32px solid transparent;
+  border-image: url("../assets/caixa_p.png") 120 fill / 32px stretch;
+}
+
+.caixa label {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.caixa input {
+  width: 100%;
+  padding: 10px;
+  font: inherit;
+  color: #000;
+  /* O label tem .texto-borda e o contorno é herdado; no input ele cobriria as letras */
+  -webkit-text-stroke: 0;
+  border: 4px solid #000;
+  background: #fff;
+}
+
+.caixa input:focus {
+  outline: 4px solid #fbd94a;
+}
+
+/* Mensagem de erro em card no estilo pixel. Vazio = escondido,
+   então o card só existe quando o app.js coloca um texto. */
+.erro {
+  width: min(100%, 420px);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  font-size: 12px;
+  line-height: 1.6;
+  text-align: left;
+  color: #fff;
+  background: #c8372d;
+  border: 4px solid #000;
+  box-shadow: 0 4px 0 #000;
+  /* Ao aparecer, dá um tremidinho para chamar a atenção */
+  animation: tremer 0.3s steps(4);
+}
+
+.erro:empty {
+  display: none;
+}
+
+/* Ícone "!" num quadrado, desenhado só com CSS */
+.erro::before {
+  content: "!";
+  flex: none;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+  color: #c8372d;
+  background: #fff;
+  border: 3px solid #000;
+}
+
+@keyframes tremer {
+  25% {
+    transform: translateX(-4px);
+  }
+  50% {
+    transform: translateX(4px);
+  }
+  75% {
+    transform: translateX(-2px);
+  }
+}
+
+/* Temas: grade de botões */
+.temas {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 28px 24px; /* linhas / colunas */
+}
+
+/* Botão do tema: nome em cima, card com o ícone embaixo */
+.tema {
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  background: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Card em sprite (botao_tema.png, 389x734): mesmo esquema dos .botao,
+   quadro normal em cima, pressionado embaixo, alinhados pela base.
+   Recorte visível = quadro normal sem a margem: 347x346, começando em x=21, y=21.
+   O pressionado (mais baixo) aparece começando na linha 367. */
+.tema-card {
+  width: 130px;
+  aspect-ratio: 347 / 346;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: url("../assets/sprites/botao_tema.png") no-repeat;
+  background-size: calc(389 / 347 * 100%) calc(734 / 346 * 100%);
+  /* Em %, posição = início do recorte / (tamanho do PNG - tamanho visível) */
+  background-position: calc(21 / (389 - 347) * 100%)
+    calc(21 / (734 - 346) * 100%);
+  /* Ícone no centro da face clara, medida no PNG:
+     normal: face nas linhas 65-279 -> centro a 43,6% do card (padding-bottom 13%)
+     pressionado: face nas linhas 432-647 -> centro a 49,9% (sem padding = 50%) */
+  padding-bottom: 13%;
+}
+
+.tema-card img {
+  width: 76px;
+}
+
+.tema:hover .tema-card,
+.tema:focus-visible .tema-card,
+.tema:active .tema-card {
+  background-position: calc(21 / (389 - 347) * 100%)
+    calc(367 / (734 - 346) * 100%);
+  padding-bottom: 0;
+}
+
+/* ---------- Quiz ---------- */
+
+/* Barra de progresso em sprite: progresso.png tem 10 quadros de 727x151 empilhados.
+   O app.js define --quadro (0 a 9) e o CSS escolhe o quadro pelo background-position. */
+.progresso {
+  --quadro: 0;
+  width: min(90vw, 364px);
+  aspect-ratio: 727 / 151;
+  background: url("../assets/sprites/progresso.png") no-repeat;
+  background-size: 100% 1000%;
+  background-position: 0 calc(var(--quadro) / 9 * 100%);
+}
+
+/* Painel mais largo para enunciado e explicação */
+.caixa-larga {
+  width: min(100%, 640px);
+  text-align: center;
+  line-height: 1.8;
+}
+
+.caixa-larga[hidden] {
+  display: none;
+}
+
+#quiz-enunciado,
+#quiz-resultado {
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+#quiz-contador,
+#quiz-dica {
+  font-size: 10px;
+}
+
+#quiz-fonte a {
+  color: #fbd94a;
+}
+
+/* Feedback, erro e botões: empilhados no celular */
+.quiz-lateral {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Alternativas: lista de botões com a moldura do box.png */
+.alternativas {
+  width: min(100%, 640px);
+  display: grid;
+  gap: 14px;
+}
+
+/* Moldura em 9-slice com box.png (484x484, "pixels" de 24px no PNG):
+   margem transparente 0-24, borda escura 24-48, borda clara 48-72, miolo depois.
+   Corta em 72 e SEM "fill": o miolo fica com a cor de fundo do CSS,
+   assim selecionada/correta/errada continuam sendo só troca de cor.
+   12px na tela = cada "pixel" do PNG vira 4px. */
+.alternativa {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px;
+  font: inherit;
+  font-size: 11px;
+  line-height: 1.6;
+  text-align: left;
+  color: #2c2c47;
+  background: #e4eae7 padding-box; /* padding-box: a cor não vaza na margem transparente */
+  border: 12px solid transparent;
+  border-image: url("../assets/box.png") 72 / 12px stretch;
+  image-rendering: pixelated;
+  min-height: 68px;
+  cursor: pointer;
+}
+
+/* Letra A/B/C/D num quadrado na cor da borda escura do box */
+.alternativa .letra {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: #2c2c47;
+}
+
+.alternativa:hover:not(:disabled),
+.alternativa.selecionada {
+  background-color: #fbd94a;
+}
+
+/* Afunda ao selecionar, como os botões em sprite */
+.alternativa.selecionada {
+  transform: translateY(2px);
+}
+
+.alternativa.correta {
+  background-color: #6cc644;
+}
+
+.alternativa.errada {
+  background-color: #e5533d;
+  color: #fff;
+}
+
+.alternativa:disabled {
+  cursor: default;
+}
+
+/* ---------- Resultado ---------- */
+
+/* Variações de cor do .texto-borda (mantêm a borda preta) */
+.texto-amarelo    { color: #fbd94a; }
+.texto-verde      { color: #58d63a; }
+.texto-azul       { color: #3f8fe8; }
+.texto-azul-claro { color: #bfe6ff; }
+
+.resultado-cabecalho {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.resultado-cabecalho h1 {
+  text-align: left;
+}
+
+.resultado-cabecalho p {
+  font-size: 10px;
+  margin-top: 6px;
+}
+
+.medalha {
+  width: 56px;
+}
+
+/* Os três números, cada um dentro de um bloco dourado */
+.resultado-blocos {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
+.resultado-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  font-size: 8px; /* "Aproveitamento" precisa caber na coluna no celular */
+}
+
+/* O bloco reaproveita o .tema-card (sprite, recorte e número no centro da face) */
+.tema-card.bloco {
+  width: 100px;
+  /* Ao aparecer a tela, cada bloco sobe, quica e assenta, um depois do outro */
+  animation: pulo 0.6s ease-out both;
+}
+
+.resultado-item:nth-child(2) .bloco { animation-delay: 0.15s; }
+.resultado-item:nth-child(3) .bloco { animation-delay: 0.3s; }
+
+.bloco strong {
+  font-size: 14px;
+}
+
+@keyframes pulo {
+  0%   { opacity: 0; transform: translateY(24px); }
+  40%  { opacity: 1; transform: translateY(-14px); }
+  70%  { transform: translateY(0); }
+  85%  { transform: translateY(-4px); }
+  100% { transform: translateY(0); }
+}
+
+/* Telas maiores */
+@media (min-width: 768px) {
+  #quiz-enunciado,
+  #quiz-resultado {
+    font-size: 16px;
+  }
+
+  /* Resultado: tudo maior, blocos mais espaçados e botões nos cantos */
+  .resultado-cabecalho {
+    gap: 20px;
+  }
+
+  .resultado-cabecalho h1 {
+    font-size: 30px;
+  }
+
+  .resultado-cabecalho p {
+    font-size: 16px;
+  }
+
+  .medalha {
+    width: 96px;
+  }
+
+  .resultado-blocos {
+    gap: 56px;
+    margin-top: 16px;
+  }
+
+  .resultado-item {
+    font-size: 16px;
+    gap: 14px;
+  }
+
+  .tema-card.bloco {
+    width: 190px;
+  }
+
+  .bloco strong {
+    font-size: 26px;
+  }
+
+  .acoes-resultado {
+    width: min(100%, 860px);
+    justify-content: space-between;
+  }
+
+  .alternativa {
+    font-size: 13px;
+    padding: 14px;
+  }
+
+  body {
+    font-size: 14px;
+    padding-top: 48px;
+  }
+
+  h1 {
+    font-size: 22px;
+  }
+
+  .temas {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 40px;
+  }
+
+  .tema {
+    font-size: 16px;
+  }
+
+  .tema-card {
+    width: 170px;
+  }
+
+  .tema-card img {
+    width: 100px;
+  }
+}
+
+/* Desktop: quiz em duas colunas para caber na tela sem rolar.
+   Esquerda: pergunta + alternativas. Direita: correção. Botões embaixo.
+   :not([hidden]) mantém a tela escondida quando não é a atual. */
+@media (min-width: 1024px) {
+  #tela-quiz:not([hidden]) {
+    display: grid;
+    grid-template-columns: minmax(0, 720px) minmax(0, 400px);
+    grid-template-areas:
+      "progresso    progresso"
+      "pergunta     lateral"
+      "alternativas lateral"
+      "acoes        acoes";
+    grid-template-rows: auto auto 1fr auto;
+    justify-content: center;
+    align-items: start;
+    gap: 16px 32px;
+  }
+
+  /* Antes de responder (correção escondida): uma coluna só, centralizada,
+     sem reservar espaço vazio para a correção. A lateral fica só com o erro. */
+  #tela-quiz:not([hidden]):has(#quiz-feedback[hidden]) {
+    grid-template-columns: minmax(0, 720px);
+    grid-template-areas: "progresso" "pergunta" "alternativas" "lateral" "acoes";
+    grid-template-rows: none;
+  }
+
+  #quiz-progresso {
+    grid-area: progresso;
+    justify-self: center;
+    width: 300px;
+  }
+  .quiz-pergunta {
+    grid-area: pergunta;
+    width: 100%;
+  }
+  .alternativas {
+    grid-area: alternativas;
+    width: 100%;
+    gap: 8px;
+  }
+  .quiz-lateral {
+    grid-area: lateral;
+  }
+  .quiz-acoes {
+    grid-area: acoes;
+    justify-self: center;
+  }
+
+  /* Botões um pouco menores para a linha de baixo caber na tela */
+  .quiz-acoes .botao {
+    max-width: 220px;
+  }
+
+  /* Ganha altura: menos espaço no topo e alternativas mais baixas */
+  body {
+    padding-top: 16px;
+    padding-bottom: 16px;
+    gap: 16px;
+  }
+
+  .titulo {
+    width: 440px;
+  }
+
+  /* A moldura do box.png já ocupa 12px de cada lado: quase sem padding */
+  .alternativa {
+    padding: 0 6px;
+    font-size: 12px;
+    min-height: 68px;
+  }
+
+  .alternativa .letra {
+    width: 28px;
+    height: 28px;
+  }
+
+  #quiz-enunciado {
+    font-size: 14px;
+  }
+}

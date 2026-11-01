@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Code Quest</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <img class="titulo" src="assets/titulo.png" alt="Code Quest">
+
+  <!-- Todas as telas começam escondidas; o app.js mostra a certa ao carregar -->
+
+  <!-- Login: tela inicial para quem não está logado -->
+  <section id="tela-login" class="tela" hidden>
+    <form id="form-login" class="caixa">
+      <h1 class="texto-borda">Login</h1>
+      <label class="texto-borda">E-mail <input name="email" type="email" required></label>
+      <label class="texto-borda">Senha <input name="senha" type="password" required></label>
+      <p class="erro" role="alert"></p>
+      <button class="botao botao-avancar" type="submit" aria-label="Entrar"></button>
+    </form>
+    <button class="botao botao-cadastro" data-ir="tela-cadastro" aria-label="Cadastrar"></button>
+  </section>
+
+  <!-- Cadastro -->
+  <section id="tela-cadastro" class="tela" hidden>
+    <form id="form-cadastro" class="caixa">
+      <h1 class="texto-borda">Cadastro</h1>
+      <label class="texto-borda">Username <input name="username" required minlength="3" maxlength="20"></label>
+      <label class="texto-borda">E-mail <input name="email" type="email" required></label>
+      <label class="texto-borda">Senha <input name="senha" type="password" required minlength="6"></label>
+      <label class="texto-borda">Confirmar senha <input name="confirmar" type="password" required minlength="6"></label>
+      <p class="erro" role="alert"></p>
+    </form>
+    <!-- form="form-cadastro": o botão envia o formulário mesmo estando fora dele -->
+    <div class="acoes">
+      <button class="botao botao-voltar" data-ir="tela-login" aria-label="Voltar"></button>
+      <button class="botao botao-avancar" type="submit" form="form-cadastro" aria-label="Cadastrar"></button>
+    </div>
+  </section>
+
+  <!-- Temas: data-categoria = nome da categoria no banco -->
+  <section id="tela-temas" class="tela" hidden>
+    <h1 class="texto-borda">Escolha um tema</h1>
+    <div class="temas">
+      <button class="tema" data-categoria="Backend"><span class="texto-borda">Backend</span><span class="tema-card"><img src="assets/temas/backend.png" alt=""></span></button>
+      <button class="tema" data-categoria="Frontend"><span class="texto-borda">Frontend</span><span class="tema-card"><img src="assets/temas/frontend.png" alt=""></span></button>
+      <button class="tema" data-categoria="História"><span class="texto-borda">História</span><span class="tema-card"><img src="assets/temas/historia.png" alt=""></span></button>
+      <button class="tema" data-categoria="IA"><span class="texto-borda">IA</span><span class="tema-card"><img src="assets/temas/ia.png" alt=""></span></button>
+      <button class="tema" data-categoria="Segurança"><span class="texto-borda">Segurança</span><span class="tema-card"><img src="assets/temas/seguranca.png" alt=""></span></button>
+      <button class="tema" data-categoria="Aleatório"><span class="texto-borda">Aleatório</span><span class="tema-card"><img src="assets/temas/aletorio.png" alt=""></span></button>
+    </div>
+    <p id="erro-temas" class="erro" role="alert"></p>
+    <button id="botao-sair" class="botao botao-sair" aria-label="Sair"></button>
+  </section>
+
+  <!-- Quiz: uma pergunta por vez; o conteúdo é preenchido pelo app.js -->
+  <section id="tela-quiz" class="tela" hidden>
+    <div id="quiz-progresso" class="progresso" role="img"></div>
+    <div class="caixa caixa-larga quiz-pergunta">
+      <p id="quiz-contador" class="texto-borda"></p>
+      <h2 id="quiz-enunciado" class="texto-borda"></h2>
+      <p id="quiz-dica" class="texto-borda">Marque todas as corretas</p>
+    </div>
+    <div id="quiz-alternativas" class="alternativas"></div>
+    <!-- No celular fica embaixo das alternativas; no desktop vira a coluna da direita -->
+    <div class="quiz-lateral">
+      <!-- Aparece depois de responder: acertou/errou, explicação e fonte -->
+      <div id="quiz-feedback" class="caixa caixa-larga" hidden>
+        <h2 id="quiz-resultado" class="texto-borda"></h2>
+        <p id="quiz-explicacao" class="texto-borda"></p>
+        <p id="quiz-fonte" class="texto-borda"></p>
+      </div>
+      <p id="quiz-erro" class="erro" role="alert"></p>
+    </div>
+    <div class="acoes quiz-acoes">
+      <button class="botao botao-voltar" data-ir="tela-temas" aria-label="Voltar aos temas"></button>
+      <button id="quiz-avancar" class="botao botao-avancar" aria-label="Responder"></button>
+    </div>
+  </section>
+
+  <!-- Resultado da partida -->
+  <section id="tela-resultado" class="tela" hidden>
+    <!-- Cabeçalho: medalha (no lugar do troféu, que não tem asset) + título -->
+    <div class="resultado-cabecalho">
+      <img id="resultado-medalha" class="medalha" src="" alt="">
+      <div>
+        <h1 class="texto-borda texto-amarelo">Quiz Finalizado!</h1>
+        <p class="texto-borda texto-verde">Parabéns, você concluiu!</p>
+      </div>
+    </div>
+
+    <!-- Cada número dentro de um bloco dourado (mesmo sprite dos cards de tema) -->
+    <div class="resultado-blocos">
+      <div class="resultado-item">
+        <span class="texto-borda">Pontuação</span>
+        <div class="tema-card bloco"><strong id="resultado-pontuacao" class="texto-borda texto-azul-claro"></strong></div>
+      </div>
+      <div class="resultado-item">
+        <span class="texto-borda">Aproveitamento</span>
+        <div class="tema-card bloco"><strong id="resultado-aproveitamento" class="texto-borda texto-verde"></strong></div>
+      </div>
+      <div class="resultado-item">
+        <span class="texto-borda">Tempo</span>
+        <div class="tema-card bloco"><strong id="resultado-tempo" class="texto-borda texto-azul"></strong></div>
+      </div>
+    </div>
+
+    <div class="acoes acoes-resultado">
+      <button class="botao botao-voltar" data-ir="tela-temas" aria-label="Voltar aos temas"></button>
+      <button class="botao botao-avancar" data-ir="tela-temas" aria-label="Escolher outro tema"></button>
+    </div>
+  </section>
+
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
