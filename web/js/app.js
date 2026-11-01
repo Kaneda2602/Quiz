@@ -16,8 +16,38 @@ const ERROS = {
   over_email_send_rate_limit: 'Muitas tentativas. Aguarde um pouco.'
 };
 
+const el = (id) => document.getElementById(id);
+
+// Mostra só a tela pedida. O foco vai para o título dela e o título da aba muda:
+// assim o leitor de tela anuncia a troca, e o Tab começa do topo da tela nova
 function mostrarTela(id) {
   document.querySelectorAll('.tela').forEach((tela) => (tela.hidden = tela.id !== id));
+  const titulo = document.querySelector(`#${id} h1`);
+  document.title = `${titulo.textContent} | Code Quest`;
+  titulo.focus({ preventScroll: true });
+}
+
+// Aviso falado pelo leitor de tela (região #anuncio, invisível).
+// Limpa antes de escrever para a mesma frase ser falada de novo se repetir
+function anunciar(texto) {
+  el('anuncio').textContent = '';
+  setTimeout(() => (el('anuncio').textContent = texto), 100);
+}
+
+// Texto só para o leitor de tela, ex.: "10 de 12 pontos" no lugar de "10/12"
+function textoLeitor(texto) {
+  const span = document.createElement('span');
+  span.className = 'sr-only';
+  span.textContent = texto;
+  return span;
+}
+
+// Mesmo valor em duas versões: a curta aparece, a completa é a lida
+function textoDuplo(visivel, falado) {
+  const tela = document.createElement('span');
+  tela.setAttribute('aria-hidden', 'true');
+  tela.textContent = visivel;
+  return [tela, textoLeitor(falado)];
 }
 
 // Mostra o loading enquanto a tarefa (chamadas à rede + troca de tela) roda.
@@ -130,7 +160,6 @@ document.getElementById('form-cadastro').addEventListener('submit', async (event
 let quiz;
 
 const LETRAS = ['a', 'b', 'c', 'd'];
-const el = (id) => document.getElementById(id);
 
 // Clique num tema: o back cria a partida e devolve as perguntas (sem gabarito)
 document.querySelectorAll('[data-categoria]').forEach((botao) => {
@@ -151,6 +180,7 @@ async function iniciarQuiz(categoria) {
         pontos: 0,
         inicio: Date.now() // para o tempo da tela de resultado
       };
+      el('quiz-titulo').textContent = `Quiz de ${categoria}`;
       mostrarPergunta();
       mostrarTela('tela-quiz');
     });
@@ -171,6 +201,9 @@ function mostrarPergunta() {
   el('quiz-progresso').setAttribute('aria-label', `Pergunta ${quiz.atual + 1} de ${total}`);
   el('quiz-enunciado').textContent = pergunta.enunciado;
   el('quiz-dica').hidden = !pergunta.multipla;
+  // Na múltipla escolha, o leitor ouve "Marque todas as corretas" ao entrar nas alternativas
+  if (pergunta.multipla) el('quiz-alternativas').setAttribute('aria-describedby', 'quiz-dica');
+  else el('quiz-alternativas').removeAttribute('aria-describedby');
   el('quiz-feedback').hidden = true;
   el('quiz-erro').textContent = '';
   el('quiz-avancar').setAttribute('aria-label', 'Responder');
@@ -182,10 +215,13 @@ function mostrarPergunta() {
     const botao = document.createElement('button');
     botao.className = 'alternativa';
     botao.dataset.letra = letra;
+    botao.setAttribute('aria-pressed', 'false'); // o leitor diz "marcado"/"não marcado"
     const marca = document.createElement('span');
     marca.className = 'letra';
     marca.textContent = letra.toUpperCase();
-    botao.append(marca, pergunta[`opcao_${letra}`]);
+    // O quadradinho "A" é visual; o leitor ouve "Alternativa A: texto" (sem colar "ATexto")
+    marca.setAttribute('aria-hidden', 'true');
+    botao.append(marca, textoLeitor(`Alternativa ${letra.toUpperCase()}: `), pergunta[`opcao_${letra}`]);
     botao.addEventListener('click', () => selecionar(botao, pergunta.multipla));
     lista.append(botao);
   });
@@ -198,6 +234,9 @@ function selecionar(botao, multipla) {
     document.querySelectorAll('.alternativa').forEach((outro) => outro !== botao && outro.classList.remove('selecionada'));
   }
   botao.classList.toggle('selecionada');
+  document.querySelectorAll('.alternativa').forEach((alternativa) => {
+    alternativa.setAttribute('aria-pressed', alternativa.classList.contains('selecionada'));
+  });
 }
 
 // O mesmo botão Avançar primeiro responde e depois vai para a próxima pergunta
@@ -230,12 +269,19 @@ async function responder() {
   }
 }
 
-// Pinta as alternativas e mostra a explicação com a fonte
+// Pinta as alternativas e mostra a explicação com a fonte.
+// A cor não chega ao leitor de tela, então cada alternativa ganha também o texto
 function mostrarCorrecao(gabarito) {
   document.querySelectorAll('.alternativa').forEach((botao) => {
     botao.disabled = true;
-    if (gabarito.corretas.includes(botao.dataset.letra)) botao.classList.add('correta');
-    else if (botao.classList.contains('selecionada')) botao.classList.add('errada');
+    const marcada = botao.classList.contains('selecionada');
+    if (gabarito.corretas.includes(botao.dataset.letra)) {
+      botao.classList.add('correta');
+      botao.append(textoLeitor(marcada ? ', sua resposta, correta' : ', correta'));
+    } else if (marcada) {
+      botao.classList.add('errada');
+      botao.append(textoLeitor(', sua resposta, errada'));
+    }
   });
 
   el('quiz-resultado').textContent = gabarito.acertou ? 'Acertou!' : 'Errou!';
@@ -249,19 +295,27 @@ function mostrarCorrecao(gabarito) {
     link.target = '_blank';
     link.rel = 'noopener';
     link.textContent = 'abrir referência';
+    link.append(textoLeitor(' (abre em nova aba)'));
     fonte.append(link);
   } else {
     fonte.append(gabarito.fonte);
   }
 
   el('quiz-feedback').hidden = false;
-  el('quiz-avancar').setAttribute('aria-label', 'Próxima pergunta');
+  const ultima = quiz.atual === quiz.perguntas.length - 1;
+  el('quiz-avancar').setAttribute('aria-label', ultima ? 'Ver resultado' : 'Próxima pergunta');
+
+  // Fala o resultado sem tirar o foco do botão: "Errou! Resposta certa: C. <explicação>"
+  const certas = gabarito.corretas.map((letra) => letra.toUpperCase()).join(' e ');
+  anunciar(`${gabarito.acertou ? 'Acertou!' : 'Errou!'} Resposta certa: ${certas}. ${gabarito.explicacao}`);
 }
 
 function proximaPergunta() {
   quiz.atual++;
-  if (quiz.atual < quiz.perguntas.length) return mostrarPergunta();
-  mostrarResultado();
+  if (quiz.atual >= quiz.perguntas.length) return mostrarResultado();
+  mostrarPergunta();
+  // Mesma tela, pergunta nova: o foco vai ao enunciado para ele ser lido
+  el('quiz-enunciado').focus({ preventScroll: true });
 }
 
 // Medalha pela porcentagem de pontos: ouro >= 80%, prata >= 50%, bronze abaixo
@@ -276,9 +330,17 @@ function mostrarResultado() {
 
   el('resultado-medalha').src = `assets/medalhas/${medalha}.png`;
   el('resultado-medalha').alt = `Medalha de ${medalha}`;
-  el('resultado-pontuacao').textContent = `${quiz.pontos}/${total}`;
+  const minutos = Math.floor(segundos / 60);
+  const resto = segundos % 60;
+  // Na tela "10/12" e "02:35"; o leitor de tela ouve "10 de 12 pontos" e "2 minutos e 35 segundos"
+  el('resultado-pontuacao').replaceChildren(...textoDuplo(`${quiz.pontos}/${total}`, `${quiz.pontos} de ${total} pontos`));
   el('resultado-aproveitamento').textContent = `${Math.round(porcentagem * 100)}%`;
-  el('resultado-tempo').textContent = `${mmss(Math.floor(segundos / 60))}:${mmss(segundos % 60)}`;
+  el('resultado-tempo').replaceChildren(
+    ...textoDuplo(
+      `${mmss(minutos)}:${mmss(resto)}`,
+      `${minutos} ${minutos === 1 ? 'minuto' : 'minutos'} e ${resto} ${resto === 1 ? 'segundo' : 'segundos'}`
+    )
+  );
   mostrarTela('tela-resultado');
 }
 
@@ -310,15 +372,23 @@ async function carregarRanking(categoria) {
   el('ranking-lista').replaceChildren();
   el('ranking-vazio').hidden = true;
   el('erro-ranking').textContent = '';
+  el('ranking-lista').setAttribute('aria-busy', 'true');
 
   try {
     await comCarregando(async () => {
       const { jogadores } = await chamarBack(`/api/ranking?categoria=${encodeURIComponent(categoria)}`);
       el('ranking-vazio').hidden = jogadores.length > 0;
       jogadores.forEach((jogador, i) => el('ranking-lista').append(linhaRanking(jogador, i)));
+      anunciar(
+        jogadores.length
+          ? `Ranking de ${categoria}: ${jogadores.length} ${jogadores.length === 1 ? 'jogador' : 'jogadores'}.`
+          : `Ranking de ${categoria}: ${el('ranking-vazio').textContent}`
+      );
     });
   } catch (erro) {
     el('erro-ranking').textContent = erro.message;
+  } finally {
+    el('ranking-lista').removeAttribute('aria-busy');
   }
 }
 
@@ -327,14 +397,17 @@ function linhaRanking(jogador, i) {
   const linha = document.createElement('li');
   linha.className = 'ranking-linha';
 
+  // Medalha ou "4º" são só visuais; o leitor de tela ouve "1º lugar:", o nome e
+  // "12 pontos, 10 de 10 acertos" (na tela: "12 pts 10/10")
   const posicao = document.createElement('span');
   posicao.className = 'posicao texto-borda';
+  posicao.setAttribute('aria-hidden', 'true');
   if (i < 3) {
     linha.classList.add('destaque', MEDALHAS[i]);
     const medalha = document.createElement('img');
     medalha.className = 'medalha-pequena';
     medalha.src = `assets/medalhas/${MEDALHAS[i]}.png`;
-    medalha.alt = `${i + 1}º lugar`;
+    medalha.alt = '';
     posicao.append(medalha);
   } else {
     posicao.textContent = `${i + 1}º`;
@@ -357,8 +430,15 @@ function linhaRanking(jogador, i) {
   rotulo.textContent = ' acertos';
   acertos.append(rotulo);
   pontos.append(acertos);
+  pontos.setAttribute('aria-hidden', 'true');
 
-  linha.append(posicao, nome, pontos);
+  linha.append(
+    posicao,
+    textoLeitor(`${i + 1}º lugar: `),
+    nome,
+    pontos,
+    textoLeitor(`, ${jogador.pontos} pontos, ${jogador.acertos} de ${jogador.respondidas} acertos`)
+  );
   return linha;
 }
 
@@ -403,19 +483,23 @@ function mostrarRecordes(recordes) {
     nome.className = 'nome texto-borda';
     nome.textContent = categoria;
 
+    // Na tela "6 pts 6/10" ou "—"; o leitor ouve a frase completa
     const pontos = document.createElement('span');
     pontos.className = 'pontos texto-borda';
+    pontos.setAttribute('aria-hidden', 'true');
+    let falado = ': ainda não jogado';
     if (recorde) {
       pontos.textContent = `${recorde.pontos} pts`;
       const acertos = document.createElement('small');
       acertos.className = 'acertos';
       acertos.textContent = `${recorde.acertos}/${recorde.respondidas}`;
       pontos.append(acertos);
+      falado = `: ${recorde.pontos} pontos, ${recorde.acertos} de ${recorde.respondidas} acertos`;
     } else {
       pontos.textContent = '—';
     }
 
-    linha.append(posicao, nome, pontos);
+    linha.append(posicao, nome, pontos, textoLeitor(falado));
     return linha;
   });
   el('perfil-lista').replaceChildren(...linhas);
@@ -433,6 +517,7 @@ el('form-perfil').addEventListener('submit', async (evento) => {
       form.username.value = username;
       mostrarBoasVindas(username);
       el('perfil-salvo').hidden = false;
+      anunciar('Nome salvo!');
     });
   } catch (erro) {
     mostrarErro(form, erro.message);

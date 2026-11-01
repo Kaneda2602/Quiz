@@ -19,6 +19,45 @@ body {
     no-repeat fixed;
 }
 
+/* header e main só agrupam para o leitor de tela; o layout continua o do body */
+header {
+  display: contents;
+}
+
+/* flex: 1 mantém o login/cadastro centralizado na altura que sobra */
+main {
+  width: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Texto só para leitor de tela: fora da vista, mas ainda lido */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Contorno amarelo de quem navega pelo teclado (Tab) */
+button:focus-visible,
+a:focus-visible {
+  outline: 3px solid #fbd94a;
+  outline-offset: 3px;
+}
+
+/* Títulos recebem foco pelo app.js ao trocar de tela; não precisam de contorno */
+[tabindex="-1"]:focus {
+  outline: none;
+}
+
 /* Pixel art nítida ao ampliar */
 img,
 .botao,

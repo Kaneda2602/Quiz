@@ -10,57 +10,70 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <img class="titulo" src="assets/titulo.png" alt="Code Quest">
+  <header>
+    <img class="titulo" src="assets/titulo.png" alt="Code Quest">
+  </header>
 
   <!-- Loading das trocas de tela. Começa visível: cobre a abertura do site
-       até o app.js descobrir se o usuário já está logado -->
+       até o app.js descobrir se o usuário já está logado.
+       role="status": o leitor de tela fala "Carregando" ao aparecer -->
   <div id="carregando" class="carregando" role="status" aria-live="polite">
     <div class="caixa carregando-caixa">
       <img class="carregando-mario" src="assets/mario.gif" alt="">
-      <p class="texto-borda">Carregando<span class="pontinhos">...</span></p>
-      <div class="progresso carregando-barra"></div>
+      <p class="texto-borda">Carregando<span class="pontinhos" aria-hidden="true">...</span></p>
+      <div class="progresso carregando-barra" aria-hidden="true"></div>
     </div>
   </div>
 
-  <!-- Todas as telas começam escondidas; o app.js mostra a certa ao carregar -->
+  <!-- Avisos falados pelo leitor de tela (correção do quiz, nome salvo...).
+       Fica sempre na página, vazio e invisível; o app.js troca o texto -->
+  <p id="anuncio" class="sr-only" role="status" aria-live="polite"></p>
+
+  <!-- Todas as telas começam escondidas; o app.js mostra a certa ao carregar.
+       Cada tela é nomeada pelo seu h1, e o h1 recebe o foco ao abrir a tela
+       (tabindex="-1"), para o leitor de tela anunciar onde o usuário está -->
+  <main id="conteudo">
 
   <!-- Login: tela inicial para quem não está logado -->
-  <section id="tela-login" class="tela" hidden>
+  <section id="tela-login" class="tela" aria-labelledby="titulo-login" hidden>
     <form id="form-login" class="caixa">
-      <h1 class="texto-borda">Login</h1>
-      <label class="texto-borda">E-mail <input name="email" type="email" required></label>
-      <label class="texto-borda">Senha <input name="senha" type="password" required></label>
-      <p class="erro" role="alert"></p>
+      <h1 id="titulo-login" class="texto-borda" tabindex="-1">Login</h1>
+      <label class="texto-borda">E-mail <input name="email" type="email" autocomplete="email" required aria-describedby="erro-login"></label>
+      <label class="texto-borda">Senha <input name="senha" type="password" autocomplete="current-password" required aria-describedby="erro-login"></label>
+      <p id="erro-login" class="erro" role="alert"></p>
     </form>
     <!-- form="form-login": o botão envia o formulário mesmo estando fora dele -->
     <div class="acoes">
-      <button class="botao botao-cadastro" data-ir="tela-cadastro" aria-label="Cadastrar"></button>
+      <button class="botao botao-cadastro" data-ir="tela-cadastro" aria-label="Criar conta"></button>
       <button class="botao botao-login" type="submit" form="form-login" aria-label="Entrar"></button>
     </div>
   </section>
 
   <!-- Cadastro -->
-  <section id="tela-cadastro" class="tela" hidden>
+  <section id="tela-cadastro" class="tela" aria-labelledby="titulo-cadastro" hidden>
     <form id="form-cadastro" class="caixa">
-      <h1 class="texto-borda">Cadastro</h1>
-      <label class="texto-borda">Username <input name="username" required minlength="3" maxlength="20"></label>
-      <label class="texto-borda">E-mail <input name="email" type="email" required></label>
-      <label class="texto-borda">Senha <input name="senha" type="password" required minlength="6"></label>
-      <label class="texto-borda">Confirmar senha <input name="confirmar" type="password" required minlength="6"></label>
-      <p class="erro" role="alert"></p>
+      <h1 id="titulo-cadastro" class="texto-borda" tabindex="-1">Cadastro</h1>
+      <label class="texto-borda">Username <input name="username" autocomplete="username" required minlength="3" maxlength="20" aria-describedby="dica-username erro-cadastro"></label>
+      <span id="dica-username" class="sr-only">De 3 a 20 caracteres. É o nome que aparece no ranking.</span>
+      <label class="texto-borda">E-mail <input name="email" type="email" autocomplete="email" required aria-describedby="erro-cadastro"></label>
+      <label class="texto-borda">Senha <input name="senha" type="password" autocomplete="new-password" required minlength="6" aria-describedby="dica-senha erro-cadastro"></label>
+      <span id="dica-senha" class="sr-only">Pelo menos 6 caracteres.</span>
+      <label class="texto-borda">Confirmar senha <input name="confirmar" type="password" autocomplete="new-password" required minlength="6" aria-describedby="erro-cadastro"></label>
+      <p id="erro-cadastro" class="erro" role="alert"></p>
     </form>
     <!-- form="form-cadastro": o botão envia o formulário mesmo estando fora dele -->
     <div class="acoes">
-      <button class="botao botao-voltar" data-ir="tela-login" aria-label="Voltar"></button>
+      <button class="botao botao-voltar" data-ir="tela-login" aria-label="Voltar ao login"></button>
       <button class="botao botao-avancar" type="submit" form="form-cadastro" aria-label="Cadastrar"></button>
     </div>
   </section>
 
   <!-- Temas: data-categoria = nome da categoria no banco -->
-  <section id="tela-temas" class="tela" hidden>
+  <section id="tela-temas" class="tela" aria-labelledby="titulo-temas" hidden>
     <p class="boas-vindas texto-borda">Bem-vindo, <span id="boas-vindas-nome" class="texto-amarelo"></span></p>
-    <h1 class="texto-borda">Escolha um tema</h1>
-    <div class="temas">
+    <h1 id="titulo-temas" class="texto-borda" tabindex="-1">Escolha um tema</h1>
+    <!-- O nome visível de cada botão é o nome do tema; a imagem é só decoração -->
+    <div class="temas" role="group" aria-labelledby="titulo-temas">
       <button class="tema" data-categoria="Backend"><span class="texto-borda">Backend</span><span class="tema-card"><img src="assets/temas/backend.png" alt=""></span></button>
       <button class="tema" data-categoria="Frontend"><span class="texto-borda">Frontend</span><span class="tema-card"><img src="assets/temas/frontend.png" alt=""></span></button>
       <button class="tema" data-categoria="História"><span class="texto-borda">História</span><span class="tema-card"><img src="assets/temas/historia.png" alt=""></span></button>
@@ -69,27 +82,29 @@
       <button class="tema" data-categoria="Aleatório"><span class="texto-borda">Aleatório</span><span class="tema-card"><img src="assets/temas/aletorio.png" alt=""></span></button>
     </div>
     <p id="erro-temas" class="erro" role="alert"></p>
-    <div class="acoes">
-      <button id="botao-sair" class="botao botao-sair" aria-label="Sair"></button>
+    <nav class="acoes" aria-label="Conta">
+      <button id="botao-sair" class="botao botao-sair" aria-label="Sair da conta"></button>
       <button id="botao-perfil" class="botao botao-perfil" aria-label="Perfil"></button>
       <button id="botao-ranking" class="botao botao-ranking" aria-label="Ranking"></button>
-    </div>
+    </nav>
   </section>
 
   <!-- Ranking: os 10 melhores do tema escolhido -->
-  <section id="tela-ranking" class="tela" hidden>
-    <h1 class="texto-borda texto-amarelo">Ranking</h1>
-    <!-- Seletor de tema: o selecionado fica no 2º quadro do sprite (afundado) -->
-    <div class="ranking-temas">
+  <section id="tela-ranking" class="tela" aria-labelledby="titulo-ranking" hidden>
+    <h1 id="titulo-ranking" class="texto-borda texto-amarelo" tabindex="-1">Ranking</h1>
+    <!-- Seletor de tema: o selecionado fica no 2º quadro do sprite (afundado) e com aria-pressed.
+         aria-label porque no celular o nome do tema fica escondido -->
+    <div class="ranking-temas" role="group" aria-label="Tema do ranking">
       <button class="tema ranking-tema" data-ranking="Backend" aria-label="Backend"><span class="tema-card"><img src="assets/temas/backend.png" alt=""></span><span class="texto-borda">Backend</span></button>
       <button class="tema ranking-tema" data-ranking="Frontend" aria-label="Frontend"><span class="tema-card"><img src="assets/temas/frontend.png" alt=""></span><span class="texto-borda">Frontend</span></button>
       <button class="tema ranking-tema" data-ranking="História" aria-label="História"><span class="tema-card"><img src="assets/temas/historia.png" alt=""></span><span class="texto-borda">História</span></button>
       <button class="tema ranking-tema" data-ranking="IA" aria-label="IA"><span class="tema-card"><img src="assets/temas/ia.png" alt=""></span><span class="texto-borda">IA</span></button>
-      <button class="tema ranking-tema" data-ranking="Segurança" aria-label="Segurança"><span class="tema-card"><img src="assets/temas/seguranca.png" alt=""></span><span class="texto-borda">Segurança</span></button>    </div>
+      <button class="tema ranking-tema" data-ranking="Segurança" aria-label="Segurança"><span class="tema-card"><img src="assets/temas/seguranca.png" alt=""></span><span class="texto-borda">Segurança</span></button>
+    </div>
     <!-- Card do ranking: top 3 em destaque com medalha, o resto em lista -->
     <div class="caixa caixa-larga ranking-card">
       <h2 id="ranking-titulo" class="texto-borda"></h2>
-      <ol id="ranking-lista" class="ranking-lista"></ol>
+      <ol id="ranking-lista" class="ranking-lista" role="list" aria-labelledby="ranking-titulo"></ol>
       <p id="ranking-vazio" class="texto-borda" hidden>Ninguém jogou este tema ainda. Seja o primeiro!</p>
     </div>
     <p id="erro-ranking" class="erro" role="alert"></p>
@@ -99,17 +114,18 @@
   </section>
 
   <!-- Perfil: troca do username e a melhor pontuação em cada tema -->
-  <section id="tela-perfil" class="tela" hidden>
-    <h1 class="texto-borda texto-amarelo">Perfil</h1>
+  <section id="tela-perfil" class="tela" aria-labelledby="titulo-perfil" hidden>
+    <h1 id="titulo-perfil" class="texto-borda texto-amarelo" tabindex="-1">Perfil</h1>
     <form id="form-perfil" class="caixa">
-      <label class="texto-borda">Nome de exibição <input name="username" required minlength="3" maxlength="20"></label>
+      <label class="texto-borda">Nome de exibição <input name="username" autocomplete="username" required minlength="3" maxlength="20" aria-describedby="dica-perfil erro-perfil"></label>
+      <span id="dica-perfil" class="sr-only">De 3 a 20 caracteres.</span>
       <p id="perfil-salvo" class="texto-borda texto-verde" hidden>Nome salvo!</p>
-      <p class="erro" role="alert"></p>
+      <p id="erro-perfil" class="erro" role="alert"></p>
     </form>
     <!-- Uma linha por tema (os mesmos do ranking); preenchido pelo app.js -->
     <div class="caixa caixa-larga perfil-recordes">
-      <h2 class="texto-borda">Melhores pontuações</h2>
-      <ul id="perfil-lista" class="ranking-lista"></ul>
+      <h2 id="titulo-recordes" class="texto-borda">Melhores pontuações</h2>
+      <ul id="perfil-lista" class="ranking-lista" role="list" aria-labelledby="titulo-recordes"></ul>
     </div>
     <div class="acoes">
       <button class="botao botao-voltar" data-ir="tela-temas" aria-label="Voltar aos temas"></button>
@@ -118,17 +134,20 @@
   </section>
 
   <!-- Quiz: uma pergunta por vez; o conteúdo é preenchido pelo app.js -->
-  <section id="tela-quiz" class="tela" hidden>
+  <section id="tela-quiz" class="tela" aria-labelledby="quiz-titulo" hidden>
+    <!-- Título só para leitor de tela: "Quiz de IA" -->
+    <h1 id="quiz-titulo" class="sr-only" tabindex="-1"></h1>
     <div id="quiz-progresso" class="progresso" role="img"></div>
     <div class="caixa caixa-larga quiz-pergunta">
-      <h2 id="quiz-enunciado" class="texto-borda"></h2>
+      <h2 id="quiz-enunciado" class="texto-borda" tabindex="-1"></h2>
       <p id="quiz-dica" class="texto-borda">Marque todas as corretas</p>
     </div>
-    <div id="quiz-alternativas" class="alternativas"></div>
+    <!-- Grupo nomeado pelo enunciado; cada alternativa diz se está marcada (aria-pressed) -->
+    <div id="quiz-alternativas" class="alternativas" role="group" aria-labelledby="quiz-enunciado"></div>
     <!-- No celular fica embaixo das alternativas; no desktop vira a coluna da direita -->
     <div class="quiz-lateral">
       <!-- Aparece depois de responder: acertou/errou, explicação e fonte -->
-      <div id="quiz-feedback" class="caixa caixa-larga" hidden>
+      <div id="quiz-feedback" class="caixa caixa-larga" role="region" aria-labelledby="quiz-resultado" hidden>
         <h2 id="quiz-resultado" class="texto-borda"></h2>
         <p id="quiz-explicacao" class="texto-borda"></p>
         <p id="quiz-fonte" class="texto-borda"></p>
@@ -136,43 +155,46 @@
       <p id="quiz-erro" class="erro" role="alert"></p>
     </div>
     <div class="acoes quiz-acoes">
-      <button class="botao botao-voltar" data-ir="tela-temas" aria-label="Voltar aos temas"></button>
+      <button class="botao botao-voltar" data-ir="tela-temas" aria-label="Sair do quiz e voltar aos temas"></button>
       <button id="quiz-avancar" class="botao botao-avancar" aria-label="Responder"></button>
     </div>
   </section>
 
   <!-- Resultado da partida -->
-  <section id="tela-resultado" class="tela" hidden>
+  <section id="tela-resultado" class="tela" aria-labelledby="titulo-resultado" hidden>
     <!-- Cabeçalho: medalha (no lugar do troféu, que não tem asset) + título -->
     <div class="resultado-cabecalho">
       <img id="resultado-medalha" class="medalha" src="" alt="">
       <div>
-        <h1 class="texto-borda texto-amarelo">Quiz Finalizado!</h1>
+        <h1 id="titulo-resultado" class="texto-borda texto-amarelo" tabindex="-1">Quiz Finalizado!</h1>
         <p class="texto-borda texto-verde">Parabéns, você concluiu!</p>
       </div>
     </div>
 
-    <!-- Cada número dentro de um bloco dourado (mesmo sprite dos cards de tema) -->
-    <div class="resultado-blocos">
+    <!-- Cada número dentro de um bloco dourado (mesmo sprite dos cards de tema).
+         Lista de termo/valor: o leitor lê "Pontuação: 10 de 12 pontos" -->
+    <dl class="resultado-blocos">
       <div class="resultado-item">
-        <span class="texto-borda">Pontuação</span>
-        <div class="tema-card bloco"><strong id="resultado-pontuacao" class="texto-borda texto-azul-claro"></strong></div>
+        <dt class="texto-borda">Pontuação</dt>
+        <dd class="tema-card bloco"><strong id="resultado-pontuacao" class="texto-borda texto-azul-claro"></strong></dd>
       </div>
       <div class="resultado-item">
-        <span class="texto-borda">Aproveitamento</span>
-        <div class="tema-card bloco"><strong id="resultado-aproveitamento" class="texto-borda texto-verde"></strong></div>
+        <dt class="texto-borda">Aproveitamento</dt>
+        <dd class="tema-card bloco"><strong id="resultado-aproveitamento" class="texto-borda texto-verde"></strong></dd>
       </div>
       <div class="resultado-item">
-        <span class="texto-borda">Tempo</span>
-        <div class="tema-card bloco"><strong id="resultado-tempo" class="texto-borda texto-azul"></strong></div>
+        <dt class="texto-borda">Tempo</dt>
+        <dd class="tema-card bloco"><strong id="resultado-tempo" class="texto-borda texto-azul"></strong></dd>
       </div>
-    </div>
+    </dl>
 
     <div class="acoes acoes-resultado">
       <button class="botao botao-voltar" data-ir="tela-temas" aria-label="Voltar aos temas"></button>
       <button class="botao botao-avancar" data-ir="tela-temas" aria-label="Escolher outro tema"></button>
     </div>
   </section>
+
+  </main>
 
   <script src="js/config.js"></script>
   <script src="js/app.js"></script>
