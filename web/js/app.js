@@ -100,6 +100,86 @@ function mostrarBoasVindas(username) {
   document.getElementById('boas-vindas-nome').textContent = username || '';
 }
 
+// ---------- Setas do teclado ----------
+// Como num jogo: a seta leva o foco ao botão mais próximo naquela direção,
+// na tela que está aberta. Por posição na tela, então funciona igual na grade
+// de 2 colunas do celular e na de 3 do desktop, sem configurar nada.
+
+const DIRECOES = {
+  ArrowUp: [0, -1],
+  ArrowDown: [0, 1],
+  ArrowLeft: [-1, 0],
+  ArrowRight: [1, 0]
+};
+
+function centro(elemento) {
+  const caixa = elemento.getBoundingClientRect();
+  return { x: caixa.left + caixa.width / 2, y: caixa.top + caixa.height / 2 };
+}
+
+// Os dois botões se cruzam no eixo de lado? (ex.: para baixo, alguma coluna em comum)
+function alinhados(a, b, direcao) {
+  const ca = a.getBoundingClientRect();
+  const cb = b.getBoundingClientRect();
+  return direcao[0] === 0
+    ? ca.left < cb.right && cb.left < ca.right
+    : ca.top < cb.bottom && cb.top < ca.bottom;
+}
+
+document.addEventListener('keydown', (evento) => {
+  const direcao = DIRECOES[evento.key];
+  if (!direcao || evento.altKey || evento.ctrlKey || evento.metaKey || evento.shiftKey) return;
+  if (!el('carregando').hidden) return;
+
+  const atual = document.activeElement;
+  // Dentro do campo de texto, esquerda/direita andam pelas letras
+  if (atual.tagName === 'INPUT' && direcao[0] !== 0) return;
+
+  const tela = document.querySelector('.tela:not([hidden])');
+  // getClientRects: ignora o que está escondido (funciona também com os botões fixos)
+  const alvos = [...tela.querySelectorAll('button:not(:disabled), a[href], input')].filter(
+    (alvo) => alvo.getClientRects().length > 0
+  );
+  if (alvos.length === 0) return;
+
+  // Foco no título (acabou de abrir a tela): a primeira seta vai ao primeiro botão
+  if (!alvos.includes(atual)) {
+    evento.preventDefault();
+    return alvos[0].focus();
+  }
+
+  // Candidatos à frente na direção da seta; ganha o mais perto, punindo o desvio
+  // lateral (assim "para baixo" prefere o card logo abaixo ao da diagonal)
+  const origem = centro(atual);
+  let melhor;
+  let menorDistancia = Infinity;
+  alvos.forEach((alvo) => {
+    if (alvo === atual) return;
+    const destino = centro(alvo);
+    const dx = destino.x - origem.x;
+    const dy = destino.y - origem.y;
+    const frente = dx * direcao[0] + dy * direcao[1];
+    if (frente <= 1) return;
+    const lado = Math.abs(dx * direcao[1] + dy * direcao[0]);
+    // Só vale o que está mesmo naquela direção: desvio de até 2x o avanço, ou alinhado
+    // com o atual. Sem isso, "direita" no fim da linha pularia na diagonal para os
+    // botões lá embaixo
+    if (lado > frente * 2 && !alinhados(atual, alvo, direcao)) return;
+    const distancia = frente + lado * 2;
+    if (distancia < menorDistancia) {
+      menorDistancia = distancia;
+      melhor = alvo;
+    }
+  });
+
+  // Sem nada naquela direção (borda da tela): a seta só rola a página, como sempre
+  // (é assim que se lê a explicação comprida do quiz, que não recebe foco)
+  if (!melhor) return;
+  evento.preventDefault();
+  melhor.focus();
+  melhor.scrollIntoView({ block: 'nearest' });
+});
+
 // Botões de navegação: data-ir="id-da-tela"
 document.querySelectorAll('[data-ir]').forEach((botao) => {
   botao.addEventListener('click', () => mostrarTela(botao.dataset.ir));

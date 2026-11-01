@@ -46,11 +46,18 @@ main {
   border: 0;
 }
 
-/* Contorno amarelo de quem navega pelo teclado (Tab) */
+/* Indicador de foco (teclado: Tab ou setas): borda preta, como o contorno dos textos.
+   outline não muda o tamanho do botão nem mexe no sprite */
 button:focus-visible,
 a:focus-visible {
-  outline: 3px solid #fbd94a;
-  outline-offset: 3px;
+  outline: 3px solid #000;
+  outline-offset: 2px;
+}
+
+/* A moldura do box.png tem 4px transparentes por fora: sem folga extra,
+   a borda fica à mesma distância que nos outros botões */
+.alternativa:focus-visible {
+  outline-offset: -2px;
 }
 
 /* Títulos recebem foco pelo app.js ao trocar de tela; não precisam de contorno */

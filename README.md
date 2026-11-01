@@ -137,6 +137,7 @@ supabase/
 - **Painéis e alternativas** usam `border-image` (9-slice): os cantos da pixel art nunca esticam, em qualquer tamanho.
 - No desktop, o quiz usa duas colunas para caber na tela sem rolagem.
 - No celular, os botões das telas de temas e do quiz ficam fixos no fundo da tela.
+- **Teclado**: as setas levam o foco ao botão mais próximo naquela direção (como num jogo); Enter ou Espaço clicam. Tab também funciona.
 
 ## Problemas comuns
 
