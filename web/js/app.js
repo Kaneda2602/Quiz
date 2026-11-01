@@ -317,8 +317,20 @@ const LETRAS = ['a', 'b', 'c', 'd'];
 
 // Clique num tema: o back cria a partida e devolve as perguntas (sem gabarito)
 document.querySelectorAll('[data-categoria]').forEach((botao) => {
-  botao.addEventListener('click', () => iniciarQuiz(botao.dataset.categoria));
+  botao.addEventListener('click', () => {
+    const categoria = botao.dataset.categoria;
+    iniciarQuiz(categoria === 'Aleatório' ? sortearTema() : categoria);
+  });
 });
+
+// Aleatório não é um tema no banco: sorteia um dos outros botões da tela.
+// A partida fica no tema sorteado (ranking e perfil contam nele)
+function sortearTema() {
+  const temas = [...document.querySelectorAll('[data-categoria]')]
+    .map((botao) => botao.dataset.categoria)
+    .filter((categoria) => categoria !== 'Aleatório');
+  return temas[Math.floor(Math.random() * temas.length)];
+}
 
 async function iniciarQuiz(categoria) {
   el('erro-temas').textContent = '';
