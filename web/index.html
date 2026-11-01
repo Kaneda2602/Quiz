@@ -21,9 +21,12 @@
       <label class="texto-borda">E-mail <input name="email" type="email" required></label>
       <label class="texto-borda">Senha <input name="senha" type="password" required></label>
       <p class="erro" role="alert"></p>
-      <button class="botao botao-avancar" type="submit" aria-label="Entrar"></button>
     </form>
-    <button class="botao botao-cadastro" data-ir="tela-cadastro" aria-label="Cadastrar"></button>
+    <!-- form="form-login": o botão envia o formulário mesmo estando fora dele -->
+    <div class="acoes">
+      <button class="botao botao-cadastro" data-ir="tela-cadastro" aria-label="Cadastrar"></button>
+      <button class="botao botao-login" type="submit" form="form-login" aria-label="Entrar"></button>
+    </div>
   </section>
 
   <!-- Cadastro -->
