@@ -1,0 +1,13 @@
+{
+  "name": "code-quest-api",
+  "private": true,
+  "description": "API do Code Quest em Node puro (sem dependências)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node --env-file=.env server.js",
+    "dev": "node --watch --env-file=.env server.js"
+  },
+  "engines": {
+    "node": ">=20.6"
+  }
+}
