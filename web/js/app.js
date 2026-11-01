@@ -167,7 +167,8 @@ function mostrarPergunta() {
 
   // Quadro da barra (0 a 9) proporcional ao avanço, mesmo com menos de 10 perguntas
   el('quiz-progresso').style.setProperty('--quadro', Math.round(((quiz.atual + 1) / total) * 10) - 1);
-  el('quiz-contador').textContent = `Pergunta ${quiz.atual + 1} de ${total}`;
+  // Sem contador em texto: a barra é o contador; o aria-label diz o número para leitores de tela
+  el('quiz-progresso').setAttribute('aria-label', `Pergunta ${quiz.atual + 1} de ${total}`);
   el('quiz-enunciado').textContent = pergunta.enunciado;
   el('quiz-dica').hidden = !pergunta.multipla;
   el('quiz-feedback').hidden = true;

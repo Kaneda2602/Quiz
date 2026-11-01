@@ -7,11 +7,11 @@
 
 body {
   min-height: 100vh;
-  padding: 24px 16px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 24px;
+  gap: 16px;
   overflow-x: hidden;
   font-family: "Press Start 2P", monospace;
   font-size: 12px;
@@ -77,11 +77,6 @@ h1 {
   justify-content: center;
 }
 
-/* Botões menores no login/cadastro, proporcionais ao card */
-#tela-login .acoes .botao,
-#tela-cadastro .acoes .botao {
-  max-width: 190px;
-}
 
 /* Botões em sprite: quadro de cima = normal, de baixo = pressionado.
    O pressionado é mais baixo, então os dois são alinhados pela BASE:
@@ -164,6 +159,28 @@ h1 {
   flex: 1;
   width: auto;
   max-width: calc(var(--largura) * 1px);
+}
+
+/* Temas e quiz no celular: botões presos no fundo da tela, sempre à mão.
+   O padding-bottom da tela reserva a altura deles para nada ficar escondido atrás */
+#tela-temas .acoes,
+.quiz-acoes {
+  position: fixed;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+  width: min(100% - 32px, 580px);
+  z-index: 5; /* abaixo do loading (10) */
+}
+
+#tela-temas,
+#tela-quiz {
+  padding-bottom: 72px;
+}
+
+/* Fora do quiz (que tem regra própria), botões compactos para caber na tela */
+.tela:not(#tela-quiz) .acoes .botao {
+  max-width: 190px;
 }
 
 /* Painel (formulários, pergunta, correção, resultado) em 9-slice:
@@ -263,7 +280,7 @@ h1 {
 .temas {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 28px 24px; /* linhas / colunas */
+  gap: 16px 32px; /* linhas / colunas */
 }
 
 /* Botão do tema: nome em cima, card com o ícone embaixo */
@@ -272,12 +289,12 @@ h1 {
   padding: 0;
   cursor: pointer;
   font: inherit;
-  font-size: 13px;
+  font-size: 12px;
   background: none;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 /* Card em sprite (botao_tema.png, 389x734): mesmo esquema dos .botao,
@@ -302,7 +319,7 @@ h1 {
 }
 
 .tema-card img {
-  width: 76px;
+  width: 72px;
 }
 
 .tema:hover .tema-card,
@@ -319,7 +336,7 @@ h1 {
    O app.js define --quadro (0 a 9) e o CSS escolhe o quadro pelo background-position. */
 .progresso {
   --quadro: 0;
-  width: min(90vw, 364px);
+  width: min(75vw, 364px);
   aspect-ratio: 727 / 151;
   background: url("../assets/sprites/progresso.png") no-repeat;
   background-size: 100% 1000%;
@@ -331,6 +348,7 @@ h1 {
   width: min(100%, 640px);
   text-align: center;
   line-height: 1.8;
+  overflow-wrap: anywhere; /* palavra sem espaço (ex.: nome de função) quebra em vez de vazar */
 }
 
 .caixa-larga[hidden] {
@@ -343,7 +361,6 @@ h1 {
   line-height: 1.8;
 }
 
-#quiz-contador,
 #quiz-dica {
   font-size: 10px;
 }
@@ -361,11 +378,18 @@ h1 {
   gap: 16px;
 }
 
+/* Antes de responder e sem erro, a lateral fica vazia: some para não somar espaço */
+.quiz-lateral:has(#quiz-feedback[hidden]):has(#quiz-erro:empty) {
+  display: none;
+}
+
 /* Alternativas: lista de botões com a moldura do box.png */
 .alternativas {
   width: min(100%, 640px);
   display: grid;
-  gap: 14px;
+  /* minmax(0, 1fr): uma palavra comprida não alarga a coluna além da tela */
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
 }
 
 /* Moldura em 9-slice com box.png (484x484, "pixels" de 24px no PNG):
@@ -382,6 +406,7 @@ h1 {
   font-size: 11px;
   line-height: 1.6;
   text-align: left;
+  overflow-wrap: anywhere;
   color: #2c2c47;
   background: #e4eae7 padding-box; /* padding-box: a cor não vaza na margem transparente */
   border: 12px solid transparent;
@@ -452,10 +477,12 @@ h1 {
   width: 56px;
 }
 
-/* Os três números, cada um dentro de um bloco dourado */
+/* Os três números, cada um dentro de um bloco dourado.
+   No celular ficam um embaixo do outro; no desktop, lado a lado */
 .resultado-blocos {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
   gap: 12px;
 }
 
@@ -463,8 +490,8 @@ h1 {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  font-size: 8px; /* "Aproveitamento" precisa caber na coluna no celular */
+  gap: 6px;
+  font-size: 10px;
 }
 
 /* O bloco reaproveita o .tema-card (sprite, recorte e número no centro da face) */
@@ -594,6 +621,10 @@ h1 {
   padding-bottom: 0;
 }
 
+.ranking-card {
+  gap: 8px;
+}
+
 .ranking-card h2 {
   font-size: 14px;
 }
@@ -606,7 +637,8 @@ h1 {
   display: grid;
   /* minmax(0, 1fr): a coluna não cresce com o nome; ele é cortado com "..." */
   grid-template-columns: minmax(0, 1fr);
-  gap: 8px;
+  gap: 4px;
+  line-height: 1.2;
 }
 
 /* Linha comum (4º em diante): posição, nome e pontos, separadas por tracejado */
@@ -614,7 +646,7 @@ h1 {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 4px;
+  padding: 4px;
   font-size: 10px;
   text-align: left;
   border-bottom: 3px dashed rgba(0, 0, 0, 0.3);
@@ -642,10 +674,16 @@ h1 {
   white-space: nowrap;
 }
 
+/* Pontos e acertos na mesma linha: "9 pts 8/10" */
 .ranking-linha .acertos {
-  display: block;
-  margin-top: 4px;
+  margin-left: 6px;
   font-size: 7px;
+}
+
+/* Top 3 no celular: acertos embaixo dos pontos, sobrando espaço para o nome */
+.destaque .acertos {
+  display: block;
+  margin: 4px 0 0;
   text-align: right;
 }
 
@@ -654,13 +692,16 @@ h1 {
   display: none;
 }
 
+/* block: como imagem inline ela ganharia a altura da linha de texto */
 .ranking-linha .medalha-pequena {
-  width: 36px;
+  display: block;
+  width: 28px;
+  margin: 0 auto;
 }
 
 /* Top 3: card com a moldura do box.png na cor da medalha, entrando com pulo */
 .ranking-linha.destaque {
-  min-height: 64px;
+  min-height: 48px;
   padding: 0 6px;
   border: 12px solid transparent;
   border-image: url("../assets/box.png") 72 / 12px stretch;
@@ -670,13 +711,13 @@ h1 {
 }
 
 .ranking-linha.ouro {
-  min-height: 76px;
-  font-size: 13px;
+  min-height: 56px;
+  font-size: 12px;
   background-color: #fbd94a;
 }
 
 .ranking-linha.ouro .medalha-pequena {
-  width: 44px;
+  width: 34px;
 }
 
 .ranking-linha.prata {
@@ -691,8 +732,20 @@ h1 {
 
 /* Telas maiores */
 @media (min-width: 768px) {
+  #tela-temas .acoes,
+  .quiz-acoes {
+    position: static;
+    transform: none;
+    width: min(100%, 580px);
+  }
+
+  #tela-temas,
+  #tela-quiz {
+    padding-bottom: 0;
+  }
+
   .boas-vindas {
-    font-size: 16px;
+    font-size: 13px;
   }
 
   .ranking-temas {
@@ -700,31 +753,47 @@ h1 {
   }
 
   .ranking-tema .tema-card {
-    width: 84px;
+    width: 64px;
   }
 
   .ranking-tema .tema-card img {
-    width: 48px;
+    width: 36px;
   }
 
   .ranking-tema .texto-borda {
     display: inline;
   }
 
-  .acertos-rotulo {
+  .destaque .acertos {
+    display: inline;
+    margin: 0 0 0 6px;
+  }
+
+  .destaque .acertos-rotulo {
     display: inline;
   }
 
   .ranking-card h2 {
-    font-size: 18px;
+    font-size: 15px;
   }
 
   .ranking-linha {
-    font-size: 13px;
+    font-size: 12px;
   }
 
   .ranking-linha.ouro {
-    font-size: 15px;
+    font-size: 13px;
+  }
+
+  /* Top 10 inteiro na tela de notebook: top 3 na largura toda,
+     do 4º em diante em duas colunas */
+  .ranking-lista {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 16px;
+  }
+
+  .ranking-linha.destaque {
+    grid-column: 1 / -1;
   }
 
   #quiz-enunciado,
@@ -732,43 +801,45 @@ h1 {
     font-size: 16px;
   }
 
-  /* Resultado: tudo maior, blocos mais espaçados e botões nos cantos */
+  /* Resultado: um pouco maior, blocos mais espaçados e botões nos cantos */
   .resultado-cabecalho {
-    gap: 20px;
+    gap: 16px;
   }
 
   .resultado-cabecalho h1 {
-    font-size: 30px;
+    font-size: 22px;
   }
 
   .resultado-cabecalho p {
-    font-size: 16px;
+    font-size: 13px;
   }
 
   .medalha {
-    width: 96px;
+    width: 72px;
   }
 
   .resultado-blocos {
-    gap: 56px;
-    margin-top: 16px;
+    flex-direction: row;
+    justify-content: center;
+    gap: 32px;
+    margin-top: 8px;
   }
 
   .resultado-item {
-    font-size: 16px;
-    gap: 14px;
+    font-size: 13px;
+    gap: 10px;
   }
 
   .tema-card.bloco {
-    width: 190px;
+    width: 140px;
   }
 
   .bloco strong {
-    font-size: 26px;
+    font-size: 20px;
   }
 
   .acoes-resultado {
-    width: min(100%, 860px);
+    width: min(100%, 640px);
     justify-content: space-between;
   }
 
@@ -779,28 +850,29 @@ h1 {
 
   body {
     font-size: 14px;
-    padding-top: 48px;
+    padding-top: 24px;
+    gap: 16px;
   }
 
   h1 {
-    font-size: 22px;
+    font-size: 18px;
   }
 
   .temas {
     grid-template-columns: repeat(3, 1fr);
-    gap: 40px;
+    gap: 20px 32px;
   }
 
   .tema {
-    font-size: 16px;
+    font-size: 13px;
   }
 
   .tema-card {
-    width: 170px;
+    width: 120px;
   }
 
   .tema-card img {
-    width: 100px;
+    width: 68px;
   }
 }
 
