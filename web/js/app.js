@@ -135,11 +135,15 @@ document.addEventListener('keydown', (evento) => {
   // Dentro do campo de texto, esquerda/direita andam pelas letras
   if (atual.tagName === 'INPUT' && direcao[0] !== 0) return;
 
-  const tela = document.querySelector('.tela:not([hidden])');
+  // Menu de acessibilidade aberto: as setas andam só dentro dele.
+  // Senão: a tela aberta mais o cabeçalho (botão de acessibilidade)
+  const areas = el('menu-acessibilidade').open
+    ? [el('menu-acessibilidade')]
+    : [document.querySelector('header'), document.querySelector('.tela:not([hidden])')];
   // getClientRects: ignora o que está escondido (funciona também com os botões fixos)
-  const alvos = [...tela.querySelectorAll('button:not(:disabled), a[href], input')].filter(
-    (alvo) => alvo.getClientRects().length > 0
-  );
+  const alvos = areas
+    .flatMap((area) => [...area.querySelectorAll('button:not(:disabled), a[href], input')])
+    .filter((alvo) => alvo.getClientRects().length > 0);
   if (alvos.length === 0) return;
 
   // Foco no título (acabou de abrir a tela): a primeira seta vai ao primeiro botão
@@ -179,6 +183,62 @@ document.addEventListener('keydown', (evento) => {
   melhor.focus();
   melhor.scrollIntoView({ block: 'nearest' });
 });
+
+// ---------- Acessibilidade ----------
+// Tamanho da fonte e alto contraste. Valem para o app inteiro e ficam
+// guardados no navegador. O CSS faz o resto: --fonte multiplica todos os
+// font-size e a classe .alto-contraste troca as cores.
+
+const NIVEIS_FONTE = [0.85, 1, 1.15, 1.3, 1.5];
+
+// localStorage pode falhar (aba anônima, bloqueio): aí só não lembra entre visitas
+function lerPreferencias() {
+  try {
+    return JSON.parse(localStorage.getItem('acessibilidade')) || {};
+  } catch {
+    return {};
+  }
+}
+
+const preferencias = { fonte: 1, contraste: false, ...lerPreferencias() };
+
+function aplicarAcessibilidade() {
+  const raiz = document.documentElement;
+  raiz.style.setProperty('--fonte', NIVEIS_FONTE[preferencias.fonte]);
+  raiz.classList.toggle('alto-contraste', preferencias.contraste);
+
+  el('fonte-valor').textContent = `${Math.round(NIVEIS_FONTE[preferencias.fonte] * 100)}%`;
+  // aria-disabled (e não disabled): no limite o botão continua focável, então o
+  // foco não pula sozinho nem as setas o atravessam; o leitor diz "indisponível"
+  el('fonte-menor').setAttribute('aria-disabled', preferencias.fonte === 0);
+  el('fonte-maior').setAttribute('aria-disabled', preferencias.fonte === NIVEIS_FONTE.length - 1);
+  el('botao-contraste').setAttribute('aria-pressed', preferencias.contraste);
+
+  try {
+    localStorage.setItem('acessibilidade', JSON.stringify(preferencias));
+  } catch {}
+}
+
+function mudarFonte(passo) {
+  preferencias.fonte = Math.min(Math.max(preferencias.fonte + passo, 0), NIVEIS_FONTE.length - 1);
+  aplicarAcessibilidade();
+}
+
+el('botao-acessibilidade').addEventListener('click', () => el('menu-acessibilidade').showModal());
+el('fechar-acessibilidade').addEventListener('click', () => el('menu-acessibilidade').close());
+el('fonte-menor').addEventListener('click', () => mudarFonte(-1));
+el('fonte-maior').addEventListener('click', () => mudarFonte(1));
+el('botao-contraste').addEventListener('click', () => {
+  preferencias.contraste = !preferencias.contraste;
+  aplicarAcessibilidade();
+});
+
+// Clique no fundo escurecido (fora do painel) também fecha
+el('menu-acessibilidade').addEventListener('click', (evento) => {
+  if (evento.target === el('menu-acessibilidade')) el('menu-acessibilidade').close();
+});
+
+aplicarAcessibilidade();
 
 // Botões de navegação: data-ir="id-da-tela"
 document.querySelectorAll('[data-ir]').forEach((botao) => {

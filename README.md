@@ -138,6 +138,7 @@ supabase/
 - No desktop, o quiz usa duas colunas para caber na tela sem rolagem.
 - No celular, os botões das telas de temas e do quiz ficam fixos no fundo da tela.
 - **Teclado**: as setas levam o foco ao botão mais próximo naquela direção (como num jogo); Enter ou Espaço clicam. Tab também funciona.
+- **Menu de acessibilidade** (botão no topo, em todas as telas): fonte de 85% a 150% e modo alto contraste (fundo preto, cores das alternativas com contraste mínimo de 4,5:1). As escolhas ficam salvas no navegador.
 
 ## Problemas comuns
 

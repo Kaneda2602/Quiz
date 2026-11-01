@@ -1,5 +1,11 @@
 /* Mobile-first: estilos base para telas pequenas, media queries só aumentam */
 
+/* --fonte: escala de todos os textos (menu de acessibilidade, 0.85 a 1.5).
+   Todo font-size do arquivo é "Npx * var(--fonte)" */
+:root {
+  --fonte: 1;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -14,14 +20,19 @@ body {
   gap: 16px;
   overflow-x: hidden;
   font-family: "Press Start 2P", monospace;
-  font-size: 12px;
+  font-size: calc(12px * var(--fonte));
   background: #5aa9ec url("../assets/background.png") center bottom / cover
     no-repeat fixed;
 }
 
-/* header e main só agrupam para o leitor de tela; o layout continua o do body */
+/* Cabeçalho: título e botão de acessibilidade na mesma linha.
+   No celular o título encolhe para caber o botão do lado */
 header {
-  display: contents;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
 }
 
 /* flex: 1 mantém o login/cadastro centralizado na altura que sobra */
@@ -76,6 +87,7 @@ img,
 
 .titulo {
   width: min(90vw, 532px);
+  min-width: 0; /* deixa o flex do header encolher a imagem */
 }
 
 /* Texto branco com borda preta (reutilizável) */
@@ -89,7 +101,7 @@ img,
 }
 
 h1 {
-  font-size: 16px;
+  font-size: calc(16px * var(--fonte));
   text-align: center;
   line-height: 1.5;
 }
@@ -105,7 +117,7 @@ h1 {
 
 /* Saudação no topo da tela de temas; nomes longos quebram em vez de vazar */
 .boas-vindas {
-  font-size: 12px;
+  font-size: calc(12px * var(--fonte));
   text-align: center;
   overflow-wrap: anywhere;
   padding: 0 0.3em; /* não corta o contorno nas pontas */
@@ -203,6 +215,111 @@ h1 {
   background-image: url("../assets/sprites/salvar.png");
 }
 
+/* acessibilidade.png: 410x210, normal nas linhas 10-104, pressionado até a 199 */
+.botao-acessibilidade {
+  --largura: 410;
+  --img-h: 210;
+  --altura: 95;
+  --topo: 10;
+  --topo-pressionado: 105;
+  flex: none;
+  width: 150px;
+  background-image: url("../assets/sprites/acessibilidade.png");
+}
+
+/* ---------- Menu de acessibilidade ---------- */
+
+/* <dialog> sem o visual padrão do navegador: só o painel e o botão Fechar */
+.menu-acessibilidade {
+  width: min(100% - 32px, 420px);
+  max-height: calc(100% - 32px);
+  margin: auto; /* o reset "* { margin: 0 }" tiraria a centralização do dialog */
+  padding: 0;
+  border: 0;
+  background: none;
+  overflow: visible;
+}
+
+.menu-acessibilidade::backdrop {
+  background: rgba(20, 24, 48, 0.75);
+}
+
+.menu-conteudo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.menu-acessibilidade .caixa {
+  width: 100%;
+}
+
+.menu-acessibilidade h2 {
+  /* 5vw: "Acessibilidade" é uma palavra só e precisa caber no painel do celular */
+  font-size: min(calc(16px * var(--fonte)), 5vw);
+}
+
+/* A- 100% A+ */
+.menu-fonte {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.menu-fonte output {
+  min-width: 4.5em;
+  text-align: center;
+  font-size: calc(14px * var(--fonte));
+}
+
+/* Botões do menu: mesma moldura e cores das alternativas do quiz */
+.opcao {
+  min-width: 64px;
+  min-height: 56px;
+  padding: 0 8px;
+  font: inherit;
+  font-size: calc(14px * var(--fonte));
+  color: #2c2c47;
+  background: #e4eae7 padding-box;
+  border: 12px solid transparent;
+  border-image: url("../assets/box.png") 72 / 12px stretch;
+  image-rendering: pixelated;
+  cursor: pointer;
+}
+
+.opcao:hover:not([aria-disabled="true"]) {
+  background-color: #fbd94a;
+}
+
+/* A- no menor tamanho / A+ no maior: apagado, mas ainda recebe foco */
+.opcao[aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.opcao-larga {
+  width: 100%;
+}
+
+/* Alto contraste ligado: o botão fica amarelo e escreve "ligado" */
+.opcao[aria-pressed="true"] {
+  background-color: #fbd94a;
+}
+
+.opcao[aria-pressed]::after {
+  content: ": desligado";
+}
+
+.opcao[aria-pressed="true"]::after {
+  content: ": ligado";
+}
+
+.menu-acessibilidade .acoes .botao {
+  max-width: 190px;
+}
+
 /* Botões lado a lado (Voltar | Avançar): dividem a largura, até o tamanho original */
 .acoes {
   width: min(100%, 580px);
@@ -291,7 +408,7 @@ h1 {
   align-items: center;
   gap: 12px;
   padding: 12px 14px;
-  font-size: 12px;
+  font-size: calc(12px * var(--fonte));
   line-height: 1.6;
   text-align: left;
   color: #fff;
@@ -314,7 +431,7 @@ h1 {
   height: 30px;
   display: grid;
   place-items: center;
-  font-size: 14px;
+  font-size: calc(14px * var(--fonte));
   color: #c8372d;
   background: #fff;
   border: 3px solid #000;
@@ -345,7 +462,8 @@ h1 {
   padding: 0;
   cursor: pointer;
   font: inherit;
-  font-size: 12px;
+  /* 4.4vw: com a fonte grande, "Segurança" ainda cabe na coluna do celular */
+  font-size: min(calc(12px * var(--fonte)), 4.4vw);
   background: none;
   display: flex;
   flex-direction: column;
@@ -413,12 +531,12 @@ h1 {
 
 #quiz-enunciado,
 #quiz-resultado {
-  font-size: 13px;
+  font-size: calc(13px * var(--fonte));
   line-height: 1.8;
 }
 
 #quiz-dica {
-  font-size: 10px;
+  font-size: calc(10px * var(--fonte));
 }
 
 #quiz-fonte a {
@@ -459,7 +577,7 @@ h1 {
   gap: 12px;
   padding: 6px;
   font: inherit;
-  font-size: 11px;
+  font-size: calc(11px * var(--fonte));
   line-height: 1.6;
   text-align: left;
   overflow-wrap: anywhere;
@@ -525,7 +643,7 @@ h1 {
 }
 
 .resultado-cabecalho p {
-  font-size: 10px;
+  font-size: calc(10px * var(--fonte));
   margin-top: 6px;
 }
 
@@ -547,12 +665,13 @@ h1 {
   flex-direction: column;
   align-items: center;
   gap: 6px;
-  font-size: 10px;
+  font-size: calc(10px * var(--fonte));
 }
 
 /* O bloco reaproveita o .tema-card (sprite, recorte e número no centro da face) */
 .tema-card.bloco {
-  width: 100px;
+  /* Cresce com a fonte maior: "10/12" e "02:35" continuam dentro do bloco */
+  width: calc(100px * max(1, var(--fonte)));
   /* Ao aparecer a tela, cada bloco sobe, quica e assenta, um depois do outro */
   animation: pulo 0.6s ease-out both;
 }
@@ -561,7 +680,7 @@ h1 {
 .resultado-item:nth-child(3) .bloco { animation-delay: 0.3s; }
 
 .bloco strong {
-  font-size: 14px;
+  font-size: calc(14px * var(--fonte));
 }
 
 @keyframes pulo {
@@ -596,7 +715,7 @@ h1 {
 }
 
 .carregando-caixa p {
-  font-size: 12px;
+  font-size: calc(12px * var(--fonte));
 }
 
 /* mario.gif (219x256) já é animado; aqui só o tamanho */
@@ -654,7 +773,7 @@ h1 {
 }
 
 .ranking-tema {
-  font-size: 9px;
+  font-size: calc(9px * var(--fonte));
   gap: 6px;
 }
 
@@ -682,7 +801,7 @@ h1 {
 }
 
 .ranking-card h2 {
-  font-size: 14px;
+  font-size: calc(14px * var(--fonte));
 }
 
 .ranking-lista {
@@ -703,7 +822,7 @@ h1 {
   align-items: center;
   gap: 8px;
   padding: 4px;
-  font-size: 10px;
+  font-size: calc(10px * var(--fonte));
   text-align: left;
   border-bottom: 3px dashed rgba(0, 0, 0, 0.3);
 }
@@ -733,7 +852,7 @@ h1 {
 /* Pontos e acertos na mesma linha: "9 pts 8/10" */
 .ranking-linha .acertos {
   margin-left: 6px;
-  font-size: 7px;
+  font-size: calc(7px * var(--fonte));
 }
 
 /* Top 3 no celular: acertos embaixo dos pontos, sobrando espaço para o nome */
@@ -768,7 +887,7 @@ h1 {
 }
 
 .perfil-recordes h2 {
-  font-size: 14px;
+  font-size: calc(14px * var(--fonte));
 }
 
 .ranking-linha.destaque {
@@ -783,7 +902,7 @@ h1 {
 
 .ranking-linha.ouro {
   min-height: 56px;
-  font-size: 12px;
+  font-size: calc(12px * var(--fonte));
   background-color: #fbd94a;
 }
 
@@ -801,8 +920,72 @@ h1 {
   animation-delay: 0.2s;
 }
 
+/* ---------- Alto contraste (menu de acessibilidade) ----------
+   Os textos já têm contorno preto (.texto-borda), então o que muda é o que
+   dependia do cenário ou só da cor. Contrastes medidos (WCAG, mínimo 4,5:1):
+   - fundo com cenário -> preto liso: nada atrás dos textos e botões
+   - alternativa errada: branco em #e5533d dava 3,7:1 -> #b3261e dá 6,5:1
+   - alternativa marcada: amarelo x cinza-claro só muda a cor (1,2:1)
+     -> fica escura com texto branco (13:1), diferente de longe
+   - foco: borda preta sumiria no fundo preto -> amarela (15:1)
+   - tracejado do ranking (preto 30%) -> linha preta cheia */
+.alto-contraste body {
+  background: #000;
+}
+
+.alto-contraste .carregando {
+  background: #000;
+}
+
+.alto-contraste .menu-acessibilidade::backdrop {
+  background: rgba(0, 0, 0, 0.9);
+}
+
+.alto-contraste button:focus-visible,
+.alto-contraste a:focus-visible {
+  outline-color: #fbd94a;
+}
+
+.alto-contraste .alternativa.selecionada {
+  color: #fff;
+  background-color: #2c2c47;
+}
+
+/* O quadradinho da letra era da mesma cor do fundo novo: inverte */
+.alto-contraste .alternativa.selecionada .letra {
+  color: #2c2c47;
+  background: #fbd94a;
+}
+
+/* Depois de responder, certa/errada vencem a cor de marcada */
+.alto-contraste .alternativa.correta {
+  color: #2c2c47;
+  background-color: #6cc644;
+}
+
+.alto-contraste .alternativa.errada {
+  color: #fff;
+  background-color: #b3261e;
+}
+
+.alto-contraste .ranking-linha {
+  border-bottom-style: solid;
+  border-bottom-color: #000;
+}
+
+/* Tema escolhido no ranking: além do sprite afundado, uma borda amarela */
+.alto-contraste .ranking-tema.selecionado .tema-card {
+  outline: 3px solid #fbd94a;
+  outline-offset: 2px;
+}
+
 /* Telas maiores */
 @media (min-width: 768px) {
+  /* Sobra espaço do lado do título: botão de acessibilidade maior e mais legível */
+  .botao-acessibilidade {
+    width: 190px;
+  }
+
   #tela-temas .acoes,
   .quiz-acoes {
     position: static;
@@ -816,7 +999,7 @@ h1 {
   }
 
   .boas-vindas {
-    font-size: 13px;
+    font-size: calc(13px * var(--fonte));
   }
 
   .ranking-temas {
@@ -845,15 +1028,15 @@ h1 {
   }
 
   .ranking-card h2 {
-    font-size: 15px;
+    font-size: calc(15px * var(--fonte));
   }
 
   .ranking-linha {
-    font-size: 12px;
+    font-size: calc(12px * var(--fonte));
   }
 
   .ranking-linha.ouro {
-    font-size: 13px;
+    font-size: calc(13px * var(--fonte));
   }
 
   /* Top 10 inteiro na tela de notebook: top 3 na largura toda,
@@ -869,7 +1052,7 @@ h1 {
 
   #quiz-enunciado,
   #quiz-resultado {
-    font-size: 16px;
+    font-size: calc(16px * var(--fonte));
   }
 
   /* Resultado: um pouco maior, blocos mais espaçados e botões nos cantos */
@@ -878,11 +1061,11 @@ h1 {
   }
 
   .resultado-cabecalho h1 {
-    font-size: 22px;
+    font-size: calc(22px * var(--fonte));
   }
 
   .resultado-cabecalho p {
-    font-size: 13px;
+    font-size: calc(13px * var(--fonte));
   }
 
   .medalha {
@@ -897,16 +1080,16 @@ h1 {
   }
 
   .resultado-item {
-    font-size: 13px;
+    font-size: calc(13px * var(--fonte));
     gap: 10px;
   }
 
   .tema-card.bloco {
-    width: 140px;
+    width: calc(140px * max(1, var(--fonte)));
   }
 
   .bloco strong {
-    font-size: 20px;
+    font-size: calc(20px * var(--fonte));
   }
 
   .acoes-resultado {
@@ -915,18 +1098,18 @@ h1 {
   }
 
   .alternativa {
-    font-size: 13px;
+    font-size: calc(13px * var(--fonte));
     padding: 14px;
   }
 
   body {
-    font-size: 14px;
+    font-size: calc(14px * var(--fonte));
     padding-top: 24px;
     gap: 16px;
   }
 
   h1 {
-    font-size: 18px;
+    font-size: calc(18px * var(--fonte));
   }
 
   .temas {
@@ -935,7 +1118,7 @@ h1 {
   }
 
   .tema {
-    font-size: 13px;
+    font-size: calc(13px * var(--fonte));
   }
 
   .tema-card {
@@ -1011,10 +1194,22 @@ h1 {
     width: 440px;
   }
 
+  /* Botão de acessibilidade no canto: não empurra o título do centro */
+  header {
+    position: relative;
+  }
+
+  .botao-acessibilidade {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 220px;
+  }
+
   /* A moldura do box.png já ocupa 12px de cada lado: quase sem padding */
   .alternativa {
     padding: 0 6px;
-    font-size: 12px;
+    font-size: calc(12px * var(--fonte));
     min-height: 68px;
   }
 
@@ -1024,6 +1219,6 @@ h1 {
   }
 
   #quiz-enunciado {
-    font-size: 14px;
+    font-size: calc(14px * var(--fonte));
   }
 }

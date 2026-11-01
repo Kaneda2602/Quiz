@@ -12,7 +12,34 @@
 <body>
   <header>
     <img class="titulo" src="assets/titulo.png" alt="Code Quest">
+    <!-- Fica fora das telas: o menu abre de qualquer uma, até do login -->
+    <button id="botao-acessibilidade" class="botao botao-acessibilidade" aria-label="Acessibilidade" aria-haspopup="dialog" aria-controls="menu-acessibilidade"></button>
   </header>
+
+  <!-- Menu de acessibilidade. <dialog> com showModal(): prende o foco no menu,
+       fecha com Esc e devolve o foco ao botão que abriu -->
+  <dialog id="menu-acessibilidade" class="menu-acessibilidade" aria-labelledby="titulo-acessibilidade">
+    <!-- Um só bloco dentro do dialog: clique no fundo escurecido fecha,
+         clique nos espaços entre painel e botão não -->
+    <div class="menu-conteudo">
+    <div class="caixa">
+      <h2 id="titulo-acessibilidade" class="texto-borda">Acessibilidade</h2>
+
+      <p id="rotulo-fonte" class="texto-borda">Tamanho da fonte</p>
+      <div class="menu-fonte" role="group" aria-labelledby="rotulo-fonte">
+        <button id="fonte-menor" class="opcao" aria-label="Diminuir fonte">A-</button>
+        <output id="fonte-valor" class="texto-borda" aria-live="polite">100%</output>
+        <button id="fonte-maior" class="opcao" aria-label="Aumentar fonte">A+</button>
+      </div>
+
+      <!-- aria-pressed: o leitor de tela diz se está ligado -->
+      <button id="botao-contraste" class="opcao opcao-larga" aria-pressed="false">Alto contraste</button>
+    </div>
+    <div class="acoes">
+      <button id="fechar-acessibilidade" class="botao botao-voltar" aria-label="Fechar menu de acessibilidade"></button>
+    </div>
+    </div>
+  </dialog>
 
   <!-- Loading das trocas de tela. Começa visível: cobre a abertura do site
        até o app.js descobrir se o usuário já está logado.
