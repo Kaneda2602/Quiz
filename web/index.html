@@ -12,6 +12,16 @@
 <body>
   <img class="titulo" src="assets/titulo.png" alt="Code Quest">
 
+  <!-- Loading das trocas de tela. Começa visível: cobre a abertura do site
+       até o app.js descobrir se o usuário já está logado -->
+  <div id="carregando" class="carregando" role="status" aria-live="polite">
+    <div class="caixa carregando-caixa">
+      <img class="carregando-mario" src="assets/mario.gif" alt="">
+      <p class="texto-borda">Carregando<span class="pontinhos">...</span></p>
+      <div class="progresso carregando-barra"></div>
+    </div>
+  </div>
+
   <!-- Todas as telas começam escondidas; o app.js mostra a certa ao carregar -->
 
   <!-- Login: tela inicial para quem não está logado -->
@@ -58,7 +68,32 @@
       <button class="tema" data-categoria="Aleatório"><span class="texto-borda">Aleatório</span><span class="tema-card"><img src="assets/temas/aletorio.png" alt=""></span></button>
     </div>
     <p id="erro-temas" class="erro" role="alert"></p>
-    <button id="botao-sair" class="botao botao-sair" aria-label="Sair"></button>
+    <div class="acoes">
+      <button id="botao-sair" class="botao botao-sair" aria-label="Sair"></button>
+      <button id="botao-ranking" class="botao botao-ranking" aria-label="Ranking"></button>
+    </div>
+  </section>
+
+  <!-- Ranking: os 10 melhores do tema escolhido -->
+  <section id="tela-ranking" class="tela" hidden>
+    <h1 class="texto-borda texto-amarelo">Ranking</h1>
+    <!-- Seletor de tema: o selecionado fica no 2º quadro do sprite (afundado) -->
+    <div class="ranking-temas">
+      <button class="tema ranking-tema" data-ranking="Backend" aria-label="Backend"><span class="tema-card"><img src="assets/temas/backend.png" alt=""></span><span class="texto-borda">Backend</span></button>
+      <button class="tema ranking-tema" data-ranking="Frontend" aria-label="Frontend"><span class="tema-card"><img src="assets/temas/frontend.png" alt=""></span><span class="texto-borda">Frontend</span></button>
+      <button class="tema ranking-tema" data-ranking="História" aria-label="História"><span class="tema-card"><img src="assets/temas/historia.png" alt=""></span><span class="texto-borda">História</span></button>
+      <button class="tema ranking-tema" data-ranking="IA" aria-label="IA"><span class="tema-card"><img src="assets/temas/ia.png" alt=""></span><span class="texto-borda">IA</span></button>
+      <button class="tema ranking-tema" data-ranking="Segurança" aria-label="Segurança"><span class="tema-card"><img src="assets/temas/seguranca.png" alt=""></span><span class="texto-borda">Segurança</span></button>    </div>
+    <!-- Card do ranking: top 3 em destaque com medalha, o resto em lista -->
+    <div class="caixa caixa-larga ranking-card">
+      <h2 id="ranking-titulo" class="texto-borda"></h2>
+      <ol id="ranking-lista" class="ranking-lista"></ol>
+      <p id="ranking-vazio" class="texto-borda" hidden>Ninguém jogou este tema ainda. Seja o primeiro!</p>
+    </div>
+    <p id="erro-ranking" class="erro" role="alert"></p>
+    <div class="acoes">
+      <button class="botao botao-voltar" data-ir="tela-temas" aria-label="Voltar aos temas"></button>
+    </div>
   </section>
 
   <!-- Quiz: uma pergunta por vez; o conteúdo é preenchido pelo app.js -->

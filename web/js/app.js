@@ -20,6 +20,20 @@ function mostrarTela(id) {
   document.querySelectorAll('.tela').forEach((tela) => (tela.hidden = tela.id !== id));
 }
 
+// Mostra o loading enquanto a tarefa (chamadas à rede + troca de tela) roda.
+// Fica no mínimo 400ms na tela para não "piscar" quando a resposta é rápida.
+async function comCarregando(tarefa) {
+  const carregando = document.getElementById('carregando');
+  carregando.hidden = false;
+  const tempoMinimo = new Promise((resolver) => setTimeout(resolver, 400));
+  try {
+    return await tarefa();
+  } finally {
+    await tempoMinimo;
+    carregando.hidden = true;
+  }
+}
+
 function mostrarErro(form, mensagem) {
   form.querySelector('.erro').textContent = mensagem;
 }
@@ -62,13 +76,15 @@ document.getElementById('form-login').addEventListener('submit', async (evento) 
   mostrarErro(form, '');
 
   try {
-    const sessao = await chamarAuth('token?grant_type=password', {
-      email: form.email.value,
-      password: form.senha.value
+    await comCarregando(async () => {
+      const sessao = await chamarAuth('token?grant_type=password', {
+        email: form.email.value,
+        password: form.senha.value
+      });
+      localStorage.setItem('token', sessao.access_token);
+      form.reset();
+      mostrarTela('tela-temas');
     });
-    localStorage.setItem('token', sessao.access_token);
-    form.reset();
-    mostrarTela('tela-temas');
   } catch (erro) {
     mostrarErro(form, erro.message);
   }
@@ -82,17 +98,19 @@ document.getElementById('form-cadastro').addEventListener('submit', async (event
   if (form.senha.value !== form.confirmar.value) return mostrarErro(form, 'As senhas não conferem.');
 
   try {
-    // Se o usuário já foi criado e só o username falhou (ex.: repetido),
-    // a nova tentativa pula o signup e tenta só o perfil de novo
-    if (!localStorage.getItem('token')) {
-      const sessao = await chamarAuth('signup', { email: form.email.value, password: form.senha.value });
-      // Sem access_token = a confirmação de e-mail está ativa no Supabase
-      if (!sessao.access_token) return mostrarErro(form, 'Confirme seu e-mail e depois faça login.');
-      localStorage.setItem('token', sessao.access_token);
-    }
-    await chamarBack('/api/perfil', { username: form.username.value });
-    form.reset();
-    mostrarTela('tela-temas');
+    await comCarregando(async () => {
+      // Se o usuário já foi criado e só o username falhou (ex.: repetido),
+      // a nova tentativa pula o signup e tenta só o perfil de novo
+      if (!localStorage.getItem('token')) {
+        const sessao = await chamarAuth('signup', { email: form.email.value, password: form.senha.value });
+        // Sem access_token = a confirmação de e-mail está ativa no Supabase
+        if (!sessao.access_token) return mostrarErro(form, 'Confirme seu e-mail e depois faça login.');
+        localStorage.setItem('token', sessao.access_token);
+      }
+      await chamarBack('/api/perfil', { username: form.username.value });
+      form.reset();
+      mostrarTela('tela-temas');
+    });
   } catch (erro) {
     mostrarErro(form, erro.message);
   }
@@ -114,18 +132,20 @@ document.querySelectorAll('[data-categoria]').forEach((botao) => {
 async function iniciarQuiz(categoria) {
   el('erro-temas').textContent = '';
   try {
-    const dados = await chamarBack('/api/partidas', { categoria });
-    quiz = {
-      categoria,
-      partidaId: dados.partida_id,
-      perguntas: dados.perguntas,
-      atual: 0,
-      acertos: 0,
-      pontos: 0,
-      inicio: Date.now() // para o tempo da tela de resultado
-    };
-    mostrarPergunta();
-    mostrarTela('tela-quiz');
+    await comCarregando(async () => {
+      const dados = await chamarBack('/api/partidas', { categoria });
+      quiz = {
+        categoria,
+        partidaId: dados.partida_id,
+        perguntas: dados.perguntas,
+        atual: 0,
+        acertos: 0,
+        pontos: 0,
+        inicio: Date.now() // para o tempo da tela de resultado
+      };
+      mostrarPergunta();
+      mostrarTela('tela-quiz');
+    });
   } catch (erro) {
     el('erro-temas').textContent = erro.message;
     mostrarTela('tela-temas');
@@ -254,6 +274,85 @@ function mostrarResultado() {
 }
 
 
+// ---------- Ranking ----------
+
+const MEDALHAS = ['ouro', 'prata', 'bronze'];
+
+// Abre no tema da última partida jogada; se ainda não jogou (ou foi um tema
+// sem ranking, como o Aleatório), em IA
+el('botao-ranking').addEventListener('click', () => {
+  const temRanking = document.querySelector(`[data-ranking="${quiz?.categoria}"]`);
+  mostrarTela('tela-ranking');
+  carregarRanking(temRanking ? quiz.categoria : 'IA');
+});
+
+document.querySelectorAll('[data-ranking]').forEach((botao) => {
+  botao.addEventListener('click', () => carregarRanking(botao.dataset.ranking));
+});
+
+async function carregarRanking(categoria) {
+  // Marca o tema escolhido (2º quadro do sprite) e limpa o card
+  document.querySelectorAll('[data-ranking]').forEach((botao) => {
+    const escolhido = botao.dataset.ranking === categoria;
+    botao.classList.toggle('selecionado', escolhido);
+    botao.setAttribute('aria-pressed', escolhido);
+  });
+  el('ranking-titulo').textContent = categoria;
+  el('ranking-lista').replaceChildren();
+  el('ranking-vazio').hidden = true;
+  el('erro-ranking').textContent = '';
+
+  try {
+    await comCarregando(async () => {
+      const { jogadores } = await chamarBack(`/api/ranking?categoria=${encodeURIComponent(categoria)}`);
+      el('ranking-vazio').hidden = jogadores.length > 0;
+      jogadores.forEach((jogador, i) => el('ranking-lista').append(linhaRanking(jogador, i)));
+    });
+  } catch (erro) {
+    el('erro-ranking').textContent = erro.message;
+  }
+}
+
+// Uma linha do ranking. Top 3: medalha no lugar do número e classe de destaque.
+function linhaRanking(jogador, i) {
+  const linha = document.createElement('li');
+  linha.className = 'ranking-linha';
+
+  const posicao = document.createElement('span');
+  posicao.className = 'posicao texto-borda';
+  if (i < 3) {
+    linha.classList.add('destaque', MEDALHAS[i]);
+    const medalha = document.createElement('img');
+    medalha.className = 'medalha-pequena';
+    medalha.src = `assets/medalhas/${MEDALHAS[i]}.png`;
+    medalha.alt = `${i + 1}º lugar`;
+    posicao.append(medalha);
+  } else {
+    posicao.textContent = `${i + 1}º`;
+  }
+
+  // textContent: o username vem do banco e nunca deve virar HTML
+  const nome = document.createElement('span');
+  nome.className = 'nome texto-borda';
+  nome.textContent = jogador.username;
+
+  const pontos = document.createElement('span');
+  pontos.className = 'pontos texto-borda';
+  pontos.textContent = `${jogador.pontos} pts`;
+  const acertos = document.createElement('small');
+  acertos.className = 'acertos';
+  acertos.textContent = `${jogador.acertos}/${jogador.respondidas}`;
+  // A palavra "acertos" fica num span próprio para o CSS esconder no celular
+  const rotulo = document.createElement('span');
+  rotulo.className = 'acertos-rotulo';
+  rotulo.textContent = ' acertos';
+  acertos.append(rotulo);
+  pontos.append(acertos);
+
+  linha.append(posicao, nome, pontos);
+  return linha;
+}
+
 document.getElementById('botao-sair').addEventListener('click', () => {
   localStorage.removeItem('token');
   mostrarTela('tela-login');
@@ -273,4 +372,5 @@ async function iniciar() {
   mostrarTela('tela-login');
 }
 
-iniciar();
+// O loading já começa visível no HTML; some quando a primeira tela estiver pronta
+comCarregando(iniciar);

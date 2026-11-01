@@ -126,13 +126,22 @@ h1 {
   background-image: url("../assets/sprites/voltar.png");
   --largura: 274;
 }
-.botao-cadastro {
-  background-image: url("../assets/temas/cadastro.png");
+/* ranking.png tem as mesmas medidas do cadastro.png */
+.botao-cadastro,
+.botao-ranking {
   --largura: 287;
   --img-h: 205;
   --altura: 93;
   --topo: 10;
   --topo-pressionado: 103;
+}
+
+.botao-cadastro {
+  background-image: url("../assets/temas/cadastro.png");
+}
+
+.botao-ranking {
+  background-image: url("../assets/sprites/ranking.png");
 }
 
 /* Botões lado a lado (Voltar | Avançar): dividem a largura, até o tamanho original */
@@ -472,8 +481,240 @@ h1 {
   100% { transform: translateY(0); }
 }
 
+/* ---------- Loading ---------- */
+
+/* Cobre a tela inteira durante as trocas de tela que esperam a rede */
+.carregando {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(20, 24, 48, 0.55);
+  animation: surgir 0.2s steps(3);
+}
+
+.carregando[hidden] {
+  display: none;
+}
+
+.carregando-caixa {
+  width: min(100%, 300px);
+  gap: 14px;
+}
+
+.carregando-caixa p {
+  font-size: 12px;
+}
+
+/* mario.gif (219x256) já é animado; aqui só o tamanho */
+.carregando-mario {
+  width: 88px;
+  aspect-ratio: 219 / 256; /* reserva o espaço antes do GIF carregar */
+}
+
+/* Reticências aparecendo uma por vez: a largura cresce de 0 a 3 caracteres */
+.pontinhos {
+  display: inline-block;
+  width: 3ch;
+  overflow: hidden;
+  vertical-align: bottom;
+  animation: pontinhos 1.2s steps(4, jump-none) infinite;
+}
+
+/* Reaproveita a barra do quiz (10 quadros) enchendo quadro a quadro */
+.carregando-barra {
+  width: 100%;
+  animation: encher 1.5s steps(10, jump-none) infinite;
+}
+
+@keyframes surgir {
+  from { opacity: 0; }
+}
+
+@keyframes pontinhos {
+  from { width: 0; }
+  to   { width: 3ch; }
+}
+
+@keyframes encher {
+  from { background-position: 0 0; }
+  to   { background-position: 0 100%; }
+}
+
+/* Quem pediu menos movimento no sistema vê o loading parado */
+@media (prefers-reduced-motion: reduce) {
+  .carregando,
+  .pontinhos,
+  .carregando-barra {
+    animation: none;
+  }
+}
+
+/* ---------- Ranking ---------- */
+
+/* Seletor de tema: versão pequena dos cards de tema */
+.ranking-temas {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.ranking-tema {
+  font-size: 9px;
+  gap: 6px;
+}
+
+.ranking-tema .tema-card {
+  width: 50px;
+}
+
+.ranking-tema .tema-card img {
+  width: 30px;
+}
+
+/* No celular não cabe o nome embaixo de cada card; ele aparece no título do ranking */
+.ranking-tema .texto-borda {
+  display: none;
+}
+
+/* Tema selecionado: fica no 2º quadro do sprite (afundado), igual ao hover */
+.ranking-tema.selecionado .tema-card {
+  background-position: calc(21 / (389 - 347) * 100%) calc(367 / (734 - 346) * 100%);
+  padding-bottom: 0;
+}
+
+.ranking-card h2 {
+  font-size: 14px;
+}
+
+.ranking-lista {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  /* minmax(0, 1fr): a coluna não cresce com o nome; ele é cortado com "..." */
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+}
+
+/* Linha comum (4º em diante): posição, nome e pontos, separadas por tracejado */
+.ranking-linha {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 4px;
+  font-size: 10px;
+  text-align: left;
+  border-bottom: 3px dashed rgba(0, 0, 0, 0.3);
+}
+
+.ranking-linha .posicao {
+  flex: none;
+  width: 36px;
+  text-align: center;
+}
+
+/* Nome comprido não quebra o layout: corta com "..." */
+.ranking-linha .nome {
+  flex: 1;
+  min-width: 0;
+  /* O contorno do .texto-borda é desenhado para fora das letras (~0.25em);
+     sem esse respiro o overflow: hidden corta a borda */
+  padding: 0.3em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ranking-linha .pontos {
+  white-space: nowrap;
+}
+
+.ranking-linha .acertos {
+  display: block;
+  margin-top: 4px;
+  font-size: 7px;
+  text-align: right;
+}
+
+/* No celular mostra só "10/10", sobrando espaço para o nome */
+.acertos-rotulo {
+  display: none;
+}
+
+.ranking-linha .medalha-pequena {
+  width: 36px;
+}
+
+/* Top 3: card com a moldura do box.png na cor da medalha, entrando com pulo */
+.ranking-linha.destaque {
+  min-height: 64px;
+  padding: 0 6px;
+  border: 12px solid transparent;
+  border-image: url("../assets/box.png") 72 / 12px stretch;
+  background-clip: padding-box;
+  image-rendering: pixelated;
+  animation: pulo 0.6s ease-out both;
+}
+
+.ranking-linha.ouro {
+  min-height: 76px;
+  font-size: 13px;
+  background-color: #fbd94a;
+}
+
+.ranking-linha.ouro .medalha-pequena {
+  width: 44px;
+}
+
+.ranking-linha.prata {
+  background-color: #c9d3df;
+  animation-delay: 0.1s;
+}
+
+.ranking-linha.bronze {
+  background-color: #e39a5c;
+  animation-delay: 0.2s;
+}
+
 /* Telas maiores */
 @media (min-width: 768px) {
+  .ranking-temas {
+    gap: 16px;
+  }
+
+  .ranking-tema .tema-card {
+    width: 84px;
+  }
+
+  .ranking-tema .tema-card img {
+    width: 48px;
+  }
+
+  .ranking-tema .texto-borda {
+    display: inline;
+  }
+
+  .acertos-rotulo {
+    display: inline;
+  }
+
+  .ranking-card h2 {
+    font-size: 18px;
+  }
+
+  .ranking-linha {
+    font-size: 13px;
+  }
+
+  .ranking-linha.ouro {
+    font-size: 15px;
+  }
+
   #quiz-enunciado,
   #quiz-resultado {
     font-size: 16px;
