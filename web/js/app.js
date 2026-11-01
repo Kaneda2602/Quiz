@@ -51,9 +51,9 @@ async function chamarAuth(caminho, corpo) {
 }
 
 // Back: toda chamada leva o token do usuário (API_URL vem de config.js)
-async function chamarBack(caminho, corpo) {
+async function chamarBack(caminho, corpo, metodo = corpo ? 'POST' : 'GET') {
   const resposta = await fetch(API_URL + caminho, {
-    method: corpo ? 'POST' : 'GET',
+    method: metodo,
     headers: {
       Authorization: `Bearer ${localStorage.getItem('token')}`,
       'Content-Type': 'application/json'
@@ -361,6 +361,86 @@ function linhaRanking(jogador, i) {
   linha.append(posicao, nome, pontos);
   return linha;
 }
+
+// ---------- Perfil ----------
+
+el('botao-perfil').addEventListener('click', async () => {
+  el('erro-temas').textContent = '';
+  const form = el('form-perfil');
+  mostrarErro(form, '');
+  el('perfil-salvo').hidden = true;
+
+  try {
+    await comCarregando(async () => {
+      const { username, recordes } = await chamarBack('/api/perfil');
+      form.username.value = username;
+      mostrarRecordes(recordes);
+      mostrarTela('tela-perfil');
+    });
+  } catch (erro) {
+    el('erro-temas').textContent = erro.message;
+  }
+});
+
+// Uma linha por tema do ranking (mesmo ícone); quem ainda não jogou vê "—"
+function mostrarRecordes(recordes) {
+  const linhas = [...document.querySelectorAll('[data-ranking]')].map((botao) => {
+    const categoria = botao.dataset.ranking;
+    const recorde = recordes.find((r) => r.categoria === categoria);
+
+    const linha = document.createElement('li');
+    linha.className = 'ranking-linha';
+
+    const icone = document.createElement('img');
+    icone.className = 'recorde-icone';
+    icone.src = botao.querySelector('img').src;
+    icone.alt = '';
+    const posicao = document.createElement('span');
+    posicao.className = 'posicao';
+    posicao.append(icone);
+
+    const nome = document.createElement('span');
+    nome.className = 'nome texto-borda';
+    nome.textContent = categoria;
+
+    const pontos = document.createElement('span');
+    pontos.className = 'pontos texto-borda';
+    if (recorde) {
+      pontos.textContent = `${recorde.pontos} pts`;
+      const acertos = document.createElement('small');
+      acertos.className = 'acertos';
+      acertos.textContent = `${recorde.acertos}/${recorde.respondidas}`;
+      pontos.append(acertos);
+    } else {
+      pontos.textContent = '—';
+    }
+
+    linha.append(posicao, nome, pontos);
+    return linha;
+  });
+  el('perfil-lista').replaceChildren(...linhas);
+}
+
+el('form-perfil').addEventListener('submit', async (evento) => {
+  evento.preventDefault();
+  const form = evento.target;
+  mostrarErro(form, '');
+  el('perfil-salvo').hidden = true;
+
+  try {
+    await comCarregando(async () => {
+      const { username } = await chamarBack('/api/perfil', { username: form.username.value }, 'PATCH');
+      form.username.value = username;
+      mostrarBoasVindas(username);
+      el('perfil-salvo').hidden = false;
+    });
+  } catch (erro) {
+    mostrarErro(form, erro.message);
+  }
+});
+
+// Mexeu no nome de novo: some o "Nome salvo!"
+el('form-perfil').username.addEventListener('input', () => (el('perfil-salvo').hidden = true));
 
 document.getElementById('botao-sair').addEventListener('click', () => {
   localStorage.removeItem('token');

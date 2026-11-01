@@ -71,6 +71,7 @@
     <p id="erro-temas" class="erro" role="alert"></p>
     <div class="acoes">
       <button id="botao-sair" class="botao botao-sair" aria-label="Sair"></button>
+      <button id="botao-perfil" class="botao botao-perfil" aria-label="Perfil"></button>
       <button id="botao-ranking" class="botao botao-ranking" aria-label="Ranking"></button>
     </div>
   </section>
@@ -94,6 +95,25 @@
     <p id="erro-ranking" class="erro" role="alert"></p>
     <div class="acoes">
       <button class="botao botao-voltar" data-ir="tela-temas" aria-label="Voltar aos temas"></button>
+    </div>
+  </section>
+
+  <!-- Perfil: troca do username e a melhor pontuação em cada tema -->
+  <section id="tela-perfil" class="tela" hidden>
+    <h1 class="texto-borda texto-amarelo">Perfil</h1>
+    <form id="form-perfil" class="caixa">
+      <label class="texto-borda">Nome de exibição <input name="username" required minlength="3" maxlength="20"></label>
+      <p id="perfil-salvo" class="texto-borda texto-verde" hidden>Nome salvo!</p>
+      <p class="erro" role="alert"></p>
+    </form>
+    <!-- Uma linha por tema (os mesmos do ranking); preenchido pelo app.js -->
+    <div class="caixa caixa-larga perfil-recordes">
+      <h2 class="texto-borda">Melhores pontuações</h2>
+      <ul id="perfil-lista" class="ranking-lista"></ul>
+    </div>
+    <div class="acoes">
+      <button class="botao botao-voltar" data-ir="tela-temas" aria-label="Voltar aos temas"></button>
+      <button class="botao botao-salvar" type="submit" form="form-perfil" aria-label="Salvar nome"></button>
     </div>
   </section>
 

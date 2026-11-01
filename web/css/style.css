@@ -129,9 +129,11 @@ h1 {
   background-image: url("../assets/sprites/voltar.png");
   --largura: 274;
 }
-/* ranking.png tem as mesmas medidas do cadastro.png */
+/* ranking.png, perfil.png e salvar.png têm as mesmas medidas do cadastro.png */
 .botao-cadastro,
-.botao-ranking {
+.botao-ranking,
+.botao-perfil,
+.botao-salvar {
   --largura: 287;
   --img-h: 205;
   --altura: 93;
@@ -145,6 +147,14 @@ h1 {
 
 .botao-ranking {
   background-image: url("../assets/sprites/ranking.png");
+}
+
+.botao-perfil {
+  background-image: url("../assets/sprites/perfil.png");
+}
+
+.botao-salvar {
+  background-image: url("../assets/sprites/salvar.png");
 }
 
 /* Botões lado a lado (Voltar | Avançar): dividem a largura, até o tamanho original */
@@ -700,6 +710,21 @@ h1 {
 }
 
 /* Top 3: card com a moldura do box.png na cor da medalha, entrando com pulo */
+/* Perfil: ícone do tema no lugar da posição */
+.recorde-icone {
+  display: block;
+  width: 28px;
+  margin: 0 auto;
+}
+
+.perfil-recordes {
+  gap: 8px;
+}
+
+.perfil-recordes h2 {
+  font-size: 14px;
+}
+
 .ranking-linha.destaque {
   min-height: 48px;
   padding: 0 6px;
