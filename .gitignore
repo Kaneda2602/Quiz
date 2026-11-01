@@ -6,3 +6,6 @@
 
 # Skills instaladas localmente
 skills-lock.json
+
+# Variáveis de ambiente (URL e anon key do Supabase)
+.env
