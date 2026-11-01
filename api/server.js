@@ -15,7 +15,8 @@ const ROTAS = {
   'GET /api/me': require('./rotas/me'),
   'POST /api/perfil': require('./rotas/perfil'),
   'POST /api/partidas': require('./rotas/partidas'),
-  'POST /api/respostas': require('./rotas/respostas')
+  'POST /api/respostas': require('./rotas/respostas'),
+  'GET /api/ranking': require('./rotas/ranking')
 };
 
 async function tratarRequisicao(req, res) {
