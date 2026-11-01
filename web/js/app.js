@@ -65,6 +65,11 @@ async function chamarBack(caminho, corpo) {
   return dados;
 }
 
+// Saudação da tela de temas. textContent: o username vem do banco e nunca deve virar HTML
+function mostrarBoasVindas(username) {
+  document.getElementById('boas-vindas-nome').textContent = username || '';
+}
+
 // Botões de navegação: data-ir="id-da-tela"
 document.querySelectorAll('[data-ir]').forEach((botao) => {
   botao.addEventListener('click', () => mostrarTela(botao.dataset.ir));
@@ -82,6 +87,8 @@ document.getElementById('form-login').addEventListener('submit', async (evento) 
         password: form.senha.value
       });
       localStorage.setItem('token', sessao.access_token);
+      const eu = await chamarBack('/api/me');
+      mostrarBoasVindas(eu.username);
       form.reset();
       mostrarTela('tela-temas');
     });
@@ -107,7 +114,8 @@ document.getElementById('form-cadastro').addEventListener('submit', async (event
         if (!sessao.access_token) return mostrarErro(form, 'Confirme seu e-mail e depois faça login.');
         localStorage.setItem('token', sessao.access_token);
       }
-      await chamarBack('/api/perfil', { username: form.username.value });
+      const perfil = await chamarBack('/api/perfil', { username: form.username.value });
+      mostrarBoasVindas(perfil.username);
       form.reset();
       mostrarTela('tela-temas');
     });
@@ -366,7 +374,10 @@ async function iniciar() {
     const resposta = await fetch(API_URL + '/api/me', {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
     });
-    if (resposta.ok) return mostrarTela('tela-temas');
+    if (resposta.ok) {
+      mostrarBoasVindas((await resposta.json()).username);
+      return mostrarTela('tela-temas');
+    }
     localStorage.removeItem('token');
   }
   mostrarTela('tela-login');

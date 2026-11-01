@@ -57,6 +57,14 @@ h1 {
   gap: 16px;
 }
 
+/* Saudação no topo da tela de temas; nomes longos quebram em vez de vazar */
+.boas-vindas {
+  font-size: 12px;
+  text-align: center;
+  overflow-wrap: anywhere;
+  padding: 0 0.3em; /* não corta o contorno nas pontas */
+}
+
 /* display:flex acima anularia o atributo hidden */
 .tela[hidden] {
   display: none;
@@ -683,6 +691,10 @@ h1 {
 
 /* Telas maiores */
 @media (min-width: 768px) {
+  .boas-vindas {
+    font-size: 16px;
+  }
+
   .ranking-temas {
     gap: 16px;
   }
