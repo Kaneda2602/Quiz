@@ -1,7 +1,7 @@
 // Serve os arquivos do front (pasta web/) com fs
 const fs = require('fs');
 const path = require('path');
-const { responderJson } = require('./http');
+const { responderErro } = require('./http');
 
 const PASTA_WEB = path.join(__dirname, '..', '..', 'web');
 
@@ -15,10 +15,10 @@ const TIPOS = {
 function servirArquivo(caminho, res) {
   const arquivo = path.join(PASTA_WEB, caminho === '/' ? 'index.html' : caminho);
   // Impede sair da pasta web com "../"
-  if (!arquivo.startsWith(PASTA_WEB + path.sep)) return responderJson(res, 403, { erro: 'Acesso negado' });
+  if (!arquivo.startsWith(PASTA_WEB + path.sep)) return responderErro(res, 403, 'access_denied', 'Access denied');
 
   fs.readFile(arquivo, (erro, conteudo) => {
-    if (erro) return responderJson(res, 404, { erro: 'Não encontrado' });
+    if (erro) return responderErro(res, 404, 'not_found', 'Not found');
     res.writeHead(200, { 'Content-Type': TIPOS[path.extname(arquivo)] || 'application/octet-stream' });
     res.end(conteudo);
   });

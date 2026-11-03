@@ -1,35 +1,33 @@
 // POST /api/respostas { partida_id, pergunta_id, escolhidas: ["a"] }
 // Grava a resposta e só DEPOIS busca o gabarito: a RLS esconde o gabarito
 // até a pergunta ser respondida, e a resposta não pode ser trocada depois.
-const { responderJson, lerToken, lerJson } = require('../lib/http');
-const { chamarSupabase, buscarUsuario } = require('../lib/supabase');
+const { responderJson, responderErro, lerJson } = require('../lib/http');
+const { autenticar } = require('../lib/supabase');
 const { log } = require('../lib/log');
 
 module.exports = async function respostas(req, res) {
-  const token = lerToken(req);
-  const usuario = await buscarUsuario(token);
-  if (!usuario) return responderJson(res, 401, { erro: 'Sessão inválida ou expirada' });
+  const sessao = await autenticar(req, res);
+  if (!sessao) return;
+  const { supabase } = sessao;
 
   const { partida_id, pergunta_id, escolhidas } = await lerJson(req);
-  const respResposta = await chamarSupabase('/rest/v1/respostas', token, {
-    method: 'POST',
-    body: JSON.stringify({ partida_id, pergunta_id, escolhidas })
-  });
+  const { error } = await supabase.from('respostas').insert({ partida_id, pergunta_id, escolhidas });
 
-  if (!respResposta.ok) {
+  if (error) {
     // 23505 = já respondida, 23514 = alternativas inválidas, 42501 = partida de outro usuário
-    const erro = await respResposta.json().catch(() => ({}));
-    log('[respostas] Supabase recusou:', respResposta.status, erro.code || '', erro.message || '');
-    if (erro.code === '23505') return responderJson(res, 409, { erro: 'Esta pergunta já foi respondida.' });
-    if (erro.code === '23514') return responderJson(res, 400, { erro: 'Escolha pelo menos uma alternativa.' });
-    return responderJson(res, 400, { erro: 'Não foi possível salvar a resposta.' });
+    log('[respostas] Supabase recusou:', error.code || '', error.message || '');
+    if (error.code === '23505') return responderErro(res, 409, 'already_answered', 'Question was already answered');
+    if (error.code === '23514') return responderErro(res, 400, 'no_option_selected', 'Select at least one option');
+    return responderErro(res, 400, 'answer_not_saved', 'Could not save the answer');
   }
 
-  const respGabarito = await chamarSupabase(
-    `/rest/v1/gabaritos?select=corretas,explicacao,fonte,fonte_tipo&pergunta_id=eq.${Number(pergunta_id)}`,
-    token
-  );
-  const [gabarito] = await respGabarito.json();
+  // throwOnError: falha do Supabase vira 502 no server.js
+  const { data: gabarito } = await supabase
+    .from('gabaritos')
+    .select('corretas, explicacao, fonte, fonte_tipo')
+    .eq('pergunta_id', Number(pergunta_id))
+    .single()
+    .throwOnError();
 
   // Acerto = marcou exatamente as corretas (tudo ou nada, igual à view ranking)
   const acertou =

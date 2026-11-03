@@ -1,46 +1,46 @@
 // POST /api/partidas { categoria: "IA" }: começa uma partida do usuário logado.
 // Devolve o id da partida e as perguntas embaralhadas, SEM o gabarito
 // (a RLS só libera o gabarito depois que a pergunta for respondida).
-const { responderJson, lerToken, lerJson } = require('../lib/http');
-const { chamarSupabase, buscarUsuario } = require('../lib/supabase');
+const { responderJson, responderErro, lerJson } = require('../lib/http');
+const { autenticar } = require('../lib/supabase');
 const { log } = require('../lib/log');
 
 const MAX_PERGUNTAS = 10;
 
 module.exports = async function partidas(req, res) {
-  const token = lerToken(req);
-  const usuario = await buscarUsuario(token);
-  if (!usuario) return responderJson(res, 401, { erro: 'Sessão inválida ou expirada' });
+  const sessao = await autenticar(req, res);
+  if (!sessao) return;
+  const { supabase, usuario } = sessao;
 
   const { categoria } = await lerJson(req);
-  const respCategoria = await chamarSupabase(
-    `/rest/v1/categorias?select=id,nome&nome=eq.${encodeURIComponent(categoria)}`,
-    token
-  );
-  const [cat] = await respCategoria.json();
-  if (!cat) return responderJson(res, 404, { erro: 'Tema não encontrado.' });
+  // throwOnError: falha do Supabase vira 502 no server.js
+  const { data: cat } = await supabase
+    .from('categorias')
+    .select('id, nome')
+    .eq('nome', categoria)
+    .maybeSingle()
+    .throwOnError();
+  if (!cat) return responderErro(res, 404, 'theme_not_found', 'Theme not found');
 
-  const respPerguntas = await chamarSupabase(
-    `/rest/v1/perguntas?select=id,enunciado,pontos,multipla,opcao_a,opcao_b,opcao_c,opcao_d&categoria_id=eq.${cat.id}`,
-    token
-  );
-  const perguntas = await respPerguntas.json();
-  if (perguntas.length === 0) return responderJson(res, 404, { erro: 'Este tema ainda não tem perguntas.' });
+  const { data: perguntas } = await supabase
+    .from('perguntas')
+    .select('id, enunciado, pontos, multipla, opcao_a, opcao_b, opcao_c, opcao_d')
+    .eq('categoria_id', cat.id)
+    .throwOnError();
+  if (perguntas.length === 0) return responderErro(res, 404, 'theme_without_questions', 'Theme has no questions yet');
 
-  // return=representation: o Supabase devolve a linha criada, com o id
-  const respPartida = await chamarSupabase('/rest/v1/partidas', token, {
-    method: 'POST',
-    headers: { Prefer: 'return=representation' },
-    body: JSON.stringify({ categoria_id: cat.id })
-  });
-  if (!respPartida.ok) {
-    const erro = await respPartida.json().catch(() => ({}));
-    log('[partidas] Supabase recusou:', respPartida.status, erro.code || '', erro.message || '');
+  // .select().single(): o Supabase devolve a linha criada, com o id
+  const { data: partida, error } = await supabase
+    .from('partidas')
+    .insert({ categoria_id: cat.id })
+    .select('id')
+    .single();
+  if (error) {
+    log('[partidas] Supabase recusou:', error.code || '', error.message || '');
     // 23503: partidas.jogador_id aponta para perfis; conta sem username não joga
-    if (erro.code === '23503') return responderJson(res, 400, { erro: 'Sua conta está sem username. Cadastre-se de novo.' });
-    return responderJson(res, 400, { erro: 'Não foi possível começar a partida.' });
+    if (error.code === '23503') return responderErro(res, 400, 'profile_missing', 'Account has no username');
+    return responderErro(res, 400, 'match_not_started', 'Could not start the match');
   }
-  const [partida] = await respPartida.json();
 
   // Embaralha (Fisher-Yates) e pega no máximo 10
   for (let i = perguntas.length - 1; i > 0; i--) {

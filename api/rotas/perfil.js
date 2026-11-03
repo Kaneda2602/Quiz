@@ -3,80 +3,75 @@
 //   GET   -> username + melhor partida em cada tema
 //   POST  -> cria o username (cadastro)
 //   PATCH -> troca o username (tela de perfil)
-const { responderJson, lerToken, lerJson } = require('../lib/http');
-const { chamarSupabase, buscarUsuario } = require('../lib/supabase');
+const { responderJson, responderErro, lerJson } = require('../lib/http');
+const { autenticar } = require('../lib/supabase');
 const { log } = require('../lib/log');
 
 // Recusa do Supabase ao gravar username -> resposta clara para o front.
 // Códigos do Postgres: 23505 = valor repetido, 23514/23502 = check/not null
-async function responderErroUsername(res, resposta, rota) {
-  const erro = await resposta.json().catch(() => ({}));
-  log(`[${rota}] Supabase recusou:`, resposta.status, erro.code || '', erro.message || '');
-  if (resposta.status === 401) return responderJson(res, 401, { erro: 'Sessão inválida ou expirada' });
-  if (erro.code === '23505') return responderJson(res, 409, { erro: 'Este username já está em uso.' });
-  if (erro.code === '23514' || erro.code === '23502') {
-    return responderJson(res, 400, { erro: 'O username precisa ter de 3 a 20 caracteres.' });
+function responderErroUsername(res, error, status, rota) {
+  log(`[${rota}] Supabase recusou:`, status, error.code || '', error.message || '');
+  if (status === 401) return responderErro(res, 401, 'invalid_session', 'Invalid or expired session');
+  if (error.code === '23505') return responderErro(res, 409, 'username_taken', 'Username is already taken');
+  if (error.code === '23514' || error.code === '23502') {
+    return responderErro(res, 400, 'username_invalid_length', 'Username must be 3 to 20 characters');
   }
-  responderJson(res, 400, { erro: 'Não foi possível salvar o username.' });
+  responderErro(res, 400, 'username_not_saved', 'Could not save the username');
 }
 
 async function buscar(req, res) {
-  const token = lerToken(req);
-  const usuario = await buscarUsuario(token);
-  if (!usuario) return responderJson(res, 401, { erro: 'Sessão inválida ou expirada' });
+  const sessao = await autenticar(req, res);
+  if (!sessao) return;
+  const { supabase, usuario } = sessao;
 
-  const resposta = await chamarSupabase(`/rest/v1/perfis?select=username&id=eq.${usuario.id}`, token);
-  const [perfil] = resposta.ok ? await resposta.json() : [];
-  if (!perfil) return responderJson(res, 404, { erro: 'Sua conta está sem username.' });
+  const { data: perfil } = await supabase.from('perfis').select('username').eq('id', usuario.id).maybeSingle();
+  if (!perfil) return responderErro(res, 404, 'profile_missing', 'Account has no username');
 
   // A view ranking já guarda a melhor partida de cada jogador por tema
-  const recordes = await chamarSupabase(
-    `/rest/v1/ranking?select=categoria,pontos,acertos,respondidas&username=eq.${encodeURIComponent(perfil.username)}`,
-    token
-  );
-  if (!recordes.ok) {
-    log('[perfil] Supabase recusou os recordes:', recordes.status);
-    return responderJson(res, 400, { erro: 'Não foi possível carregar o perfil.' });
+  const { data: recordes, error } = await supabase
+    .from('ranking')
+    .select('categoria, pontos, acertos, respondidas')
+    .eq('username', perfil.username);
+  if (error) {
+    log('[perfil] Supabase recusou os recordes:', error.code || '', error.message || '');
+    return responderErro(res, 400, 'profile_not_loaded', 'Could not load the profile');
   }
 
-  responderJson(res, 200, { username: perfil.username, recordes: await recordes.json() });
+  responderJson(res, 200, { username: perfil.username, recordes });
 }
 
 async function criar(req, res) {
-  const token = lerToken(req);
   // Confirma o usuário antes de gravar: token ruim vira 401 claro, não erro de RLS
-  const usuario = await buscarUsuario(token);
-  if (!usuario) return responderJson(res, 401, { erro: 'Sessão inválida ou expirada' });
+  const sessao = await autenticar(req, res);
+  if (!sessao) return;
+  const { supabase, usuario } = sessao;
 
   const { username } = await lerJson(req);
   log('[perfil] usuário', usuario.id, `(${usuario.role})`, 'pedindo username:', username);
-  const resposta = await chamarSupabase('/rest/v1/perfis', token, {
-    method: 'POST',
-    body: JSON.stringify({ username })
-  });
-  if (!resposta.ok) return responderErroUsername(res, resposta, 'perfil');
+  const { error, status } = await supabase.from('perfis').insert({ username });
+  if (error) return responderErroUsername(res, error, status, 'perfil');
 
   log('[perfil] criado:', username);
   responderJson(res, 201, { username });
 }
 
 async function alterar(req, res) {
-  const token = lerToken(req);
-  const usuario = await buscarUsuario(token);
-  if (!usuario) return responderJson(res, 401, { erro: 'Sessão inválida ou expirada' });
+  const sessao = await autenticar(req, res);
+  if (!sessao) return;
+  const { supabase, usuario } = sessao;
 
   const username = String((await lerJson(req)).username || '').trim();
   log('[perfil] usuário', usuario.id, 'trocando username para:', username);
-  const resposta = await chamarSupabase(`/rest/v1/perfis?id=eq.${usuario.id}`, token, {
-    method: 'PATCH',
-    headers: { Prefer: 'return=representation' },
-    body: JSON.stringify({ username })
-  });
-  if (!resposta.ok) return responderErroUsername(res, resposta, 'perfil');
+  const { data, error, status } = await supabase
+    .from('perfis')
+    .update({ username })
+    .eq('id', usuario.id)
+    .select('username');
+  if (error) return responderErroUsername(res, error, status, 'perfil');
 
   // Nenhuma linha alterada = a conta não tem perfil
-  const [perfil] = await resposta.json();
-  if (!perfil) return responderJson(res, 404, { erro: 'Sua conta está sem username.' });
+  const [perfil] = data;
+  if (!perfil) return responderErro(res, 404, 'profile_missing', 'Account has no username');
 
   log('[perfil] username alterado:', perfil.username);
   responderJson(res, 200, { username: perfil.username });

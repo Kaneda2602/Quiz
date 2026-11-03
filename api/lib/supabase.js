@@ -1,31 +1,41 @@
-// Acesso ao Supabase. O back nunca faz login: ele repassa o token do usuário
-// e age como ele, assim as políticas RLS valem para quem está logado.
-
+// Acesso ao Supabase com o supabase-js. O back nunca faz login: ele repassa o
+// token do usuário e age como ele, assim as políticas RLS valem para quem está logado.
+const { createClient, isAuthRetryableFetchError } = require('@supabase/supabase-js');
+const { responderErro, lerToken } = require('./http');
 const { log } = require('./log');
 
 const { SUPABASE_URL, SUPABASE_ANON_KEY } = process.env;
 
-// Toda chamada usa a anon key + token do usuário (nunca a service_role)
-function chamarSupabase(caminho, token, opcoes = {}) {
-  return fetch(`${SUPABASE_URL}${caminho}`, {
-    ...opcoes,
-    headers: {
-      apikey: SUPABASE_ANON_KEY,
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-      ...opcoes.headers // ex.: Prefer: return=representation
-    }
+// Um cliente por requisição com a anon key + token do usuário (nunca a service_role).
+// Sem sessão guardada: no servidor cada requisição traz o próprio token
+function criarCliente(token) {
+  return createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    global: { headers: { Authorization: `Bearer ${token}` } },
+    auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
   });
 }
 
 // Pergunta ao Supabase de quem é o token. Devolve o usuário ou null se for recusado.
-async function buscarUsuario(token) {
-  const resposta = await chamarSupabase('/auth/v1/user', token);
-  if (resposta.ok) return resposta.json();
+async function buscarUsuario(supabase, token) {
+  const { data, error } = await supabase.auth.getUser(token);
+  if (data.user) return data.user;
 
-  const erro = await resposta.json().catch(() => ({}));
-  log('Supabase recusou o token:', resposta.status, erro.error_code || erro.msg || '');
+  // Supabase fora do ar não é token ruim: vira 502 no server.js, não 401
+  if (isAuthRetryableFetchError(error)) throw error;
+  log('Supabase recusou o token:', error?.status || '', error?.code || error?.message || '');
   return null;
 }
 
-module.exports = { SUPABASE_URL, SUPABASE_ANON_KEY, chamarSupabase, buscarUsuario };
+// Cliente + usuário da requisição. Token recusado: já responde 401 e devolve null
+async function autenticar(req, res) {
+  const token = lerToken(req);
+  const supabase = criarCliente(token);
+  const usuario = await buscarUsuario(supabase, token);
+  if (!usuario) {
+    responderErro(res, 401, 'invalid_session', 'Invalid or expired session');
+    return null;
+  }
+  return { supabase, usuario };
+}
+
+module.exports = { SUPABASE_URL, SUPABASE_ANON_KEY, autenticar };

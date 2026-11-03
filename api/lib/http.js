@@ -5,6 +5,12 @@ function responderJson(res, status, dados) {
   res.end(JSON.stringify(dados));
 }
 
+// Erro sempre como { error: "codigo", message: "texto" }. O front mostra o
+// texto em português a partir do código; message serve só para depuração
+function responderErro(res, status, codigo, mensagem) {
+  responderJson(res, status, { error: codigo, message: mensagem });
+}
+
 // "Authorization: Bearer <token>" -> "<token>"
 function lerToken(req) {
   return (req.headers.authorization || '').replace('Bearer ', '');
@@ -25,4 +31,4 @@ function lerJson(req) {
   });
 }
 
-module.exports = { responderJson, lerToken, lerJson };
+module.exports = { responderJson, responderErro, lerToken, lerJson };

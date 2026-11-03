@@ -1,7 +1,7 @@
 // Servidor do Code Quest: só módulos nativos do Node e o fetch nativo.
 // Aqui fica só o roteamento; cada rota mora em rotas/.
 const http = require('http');
-const { responderJson } = require('./lib/http');
+const { responderErro } = require('./lib/http');
 const { liberarCors } = require('./lib/cors');
 const { servirArquivo } = require('./lib/estaticos');
 const { log, logErro, logRequisicao } = require('./lib/log');
@@ -40,14 +40,14 @@ async function tratarRequisicao(req, res) {
 
   try {
     if (rota) return await rota(req, res);
-    if (caminho.startsWith('/api/')) return responderJson(res, 404, { erro: 'Rota não encontrada' });
+    if (caminho.startsWith('/api/')) return responderErro(res, 404, 'route_not_found', 'Route not found');
     // Só no uso local: na Vercel o front fica no GitHub Pages
     if (req.method === 'GET') return servirArquivo(caminho, res);
-    responderJson(res, 405, { erro: 'Método não permitido' });
+    responderErro(res, 405, 'method_not_allowed', 'Method not allowed');
   } catch (erro) {
     // Ex.: Supabase fora do ar
     logErro(req.method, caminho, erro);
-    responderJson(res, 502, { erro: 'Falha ao falar com o Supabase' });
+    responderErro(res, 502, 'supabase_unavailable', 'Failed to reach Supabase');
   }
 }
 
