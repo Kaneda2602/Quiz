@@ -9,3 +9,6 @@ skills-lock.json
 
 # Variáveis de ambiente (URL e anon key do Supabase)
 .env
+
+# Dependências da API (npm install)
+node_modules/
