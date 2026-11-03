@@ -3,7 +3,7 @@
 
 let config; // { url, anonKey }, vindo de GET /api/config
 
-// Erros comuns do Supabase Auth traduzidos (chave = error_code)
+// Erros traduzidos: do Supabase Auth (chave = error_code) e do back (chave = error)
 const ERROS = {
   invalid_credentials: 'E-mail ou senha incorretos.',
   user_already_exists: 'Este e-mail já está cadastrado.',
@@ -13,7 +13,21 @@ const ERROS = {
   validation_failed: 'Confira o e-mail e a senha.',
   email_not_confirmed: 'Confirme seu e-mail antes de entrar.',
   over_request_rate_limit: 'Muitas tentativas. Aguarde um pouco.',
-  over_email_send_rate_limit: 'Muitas tentativas. Aguarde um pouco.'
+  over_email_send_rate_limit: 'Muitas tentativas. Aguarde um pouco.',
+  // back
+  supabase_unavailable: 'Falha ao falar com o Supabase.',
+  theme_not_found: 'Tema não encontrado.',
+  theme_without_questions: 'Este tema ainda não tem perguntas.',
+  match_not_started: 'Não foi possível começar a partida.',
+  profile_missing: 'Sua conta está sem username. Cadastre-se de novo.',
+  profile_not_loaded: 'Não foi possível carregar o perfil.',
+  username_taken: 'Este username já está em uso.',
+  username_invalid_length: 'O username precisa ter de 3 a 20 caracteres.',
+  username_not_saved: 'Não foi possível salvar o username.',
+  ranking_not_loaded: 'Não foi possível carregar o ranking.',
+  already_answered: 'Esta pergunta já foi respondida.',
+  no_option_selected: 'Escolha pelo menos uma alternativa.',
+  answer_not_saved: 'Não foi possível salvar a resposta.'
 };
 
 const el = (id) => document.getElementById(id);
@@ -97,7 +111,7 @@ async function chamarBack(caminho, corpo, metodo = corpo ? 'POST' : 'GET') {
     throw Object.assign(new Error('Sessão expirada'), { sessaoExpirada: true });
   }
   const dados = await resposta.json();
-  if (!resposta.ok) throw new Error(dados.erro);
+  if (!resposta.ok) throw new Error(ERROS[dados.error] || 'Algo deu errado. Tente novamente.');
   return dados;
 }
 
