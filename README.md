@@ -4,13 +4,13 @@
 
 Quiz de tecnologia em pixel art. O jogador entra com e-mail e senha, escolhe um tema e responde perguntas de única ou múltipla escolha. A cada resposta, vê a correção com explicação e fonte; no fim, vê pontuação, aproveitamento, tempo e medalha.
 
-Trabalho acadêmico feito **sem frameworks nem bibliotecas**:
+Trabalho acadêmico feito com o mínimo de bibliotecas:
 
 | Parte | Tecnologia |
 |---|---|
 | Front (`web/`) | HTML, CSS e JavaScript puros |
-| API (`api/`) | Node.js só com módulos nativos (`http`, `fs`, `path`) e `fetch` nativo — sem Express, sem dependências npm |
-| Banco e login (`supabase/`) | Supabase (Postgres + Auth), acessado pela API REST com `fetch`, sem SDK |
+| API (`api/`) | Node.js com módulos nativos (`http`, `fs`, `path`) — sem Express; única dependência é o `@supabase/supabase-js` |
+| Banco e login (`supabase/`) | Supabase (Postgres + Auth), acessado pela API com o `supabase-js` (sem funções RPC) |
 
 ## Como rodar localmente
 
@@ -48,6 +48,7 @@ No painel: **Authentication → Sign In / Providers**
 
 ```bash
 cd api
+npm install
 npm start
 ```
 
@@ -59,7 +60,7 @@ Durante o desenvolvimento, use o modo que reinicia sozinho ao salvar um arquivo:
 npm run dev
 ```
 
-> Não há `npm install`: o projeto não tem dependências.
+> O `npm install` só é necessário na primeira vez (instala o `supabase-js`).
 
 ### Rodando o front separado (opcional)
 
@@ -71,7 +72,7 @@ Para rodar o front e a API em endereços diferentes, abra a pasta `web/` com o L
 
 1. O **front** faz cadastro e login direto no Supabase Auth (`/auth/v1/signup` e `/auth/v1/token`) e guarda o `access_token` no `localStorage`.
 2. Toda chamada à API leva `Authorization: Bearer <token>`.
-3. A **API não faz login**: ela repassa o token do usuário ao Supabase junto com a anon key. Assim o Supabase aplica as políticas **RLS** como se fosse o próprio usuário.
+3. A **API não faz login**: a cada requisição ela cria um cliente do `supabase-js` com a anon key e o token do usuário. Assim o Supabase aplica as políticas **RLS** como se fosse o próprio usuário.
 4. Ao abrir o site, o front chama `/api/me`: token válido vai direto aos temas; inválido (ou expirado, após 1h) volta para o login.
 
 ### Rotas da API
@@ -88,7 +89,7 @@ Para rodar o front e a API em endereços diferentes, abra a pasta `web/` com o L
 | POST | `/api/respostas` | Bearer | Grava a resposta (`{ partida_id, pergunta_id, escolhidas }`) e só então devolve o gabarito |
 | GET | `/api/ranking?categoria=IA` | Bearer | Os 10 melhores jogadores do tema |
 
-Os erros vêm em JSON (`{ "erro": "mensagem" }`) com o status HTTP correto.
+Os erros vêm em JSON (`{ "error": "username_taken", "message": "Username is already taken" }`) com o status HTTP correto. O front traduz o código (`error`) para a mensagem em português em `ERROS`, no `web/js/app.js`.
 
 ### Banco de dados
 
@@ -118,7 +119,7 @@ api/
 ├── rotas/             # um arquivo por rota
 ├── lib/               # http, supabase, cors, logs e arquivos estáticos
 ├── .env.example
-├── package.json       # só scripts (start/dev), sem dependências
+├── package.json       # scripts (start/dev) e o supabase-js
 └── vercel.json        # deploy da API na Vercel
 web/
 ├── index.html         # todas as telas (login, cadastro, temas, ranking, perfil, quiz, resultado)
