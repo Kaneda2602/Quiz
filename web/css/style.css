@@ -1,9 +1,10 @@
 /* Mobile-first: estilos base para telas pequenas, media queries só aumentam */
 
-/* --fonte: escala de todos os textos (menu de acessibilidade, 0.85 a 1.5).
+/* --fonte: escala de todos os textos. Padrão 0.85; o menu de acessibilidade
+   multiplica por 0.85 a 1.75 (de ~0.72 a ~1.49). Definido pelo app.js.
    Todo font-size do arquivo é "Npx * var(--fonte)" */
 :root {
-  --fonte: 1;
+  --fonte: 0.85;
 }
 
 * {

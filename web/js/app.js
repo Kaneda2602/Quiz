@@ -215,7 +215,11 @@ document.addEventListener('keydown', (evento) => {
 // guardados no navegador. O CSS faz o resto: --fonte multiplica todos os
 // font-size e a classe .alto-contraste troca as cores.
 
-const NIVEIS_FONTE = [0.85, 1, 1.15, 1.3, 1.5];
+// O tamanho padrão do site é 85% dos px escritos no CSS. Os níveis do menu
+// são relativos a esse padrão: "100%" é o padrão, "85%" fica menor que ele e
+// "175%" (0.85 x 1.75 ≈ 1.49) chega perto do maior tamanho que existia antes.
+const FONTE_BASE = 0.85;
+const NIVEIS_FONTE = [0.85, 1, 1.15, 1.3, 1.5, 1.75];
 
 // localStorage pode falhar (aba anônima, bloqueio): aí só não lembra entre visitas
 function lerPreferencias() {
@@ -230,7 +234,7 @@ const preferencias = { fonte: 1, contraste: false, ...lerPreferencias() };
 
 function aplicarAcessibilidade() {
   const raiz = document.documentElement;
-  raiz.style.setProperty('--fonte', NIVEIS_FONTE[preferencias.fonte]);
+  raiz.style.setProperty('--fonte', FONTE_BASE * NIVEIS_FONTE[preferencias.fonte]);
   raiz.classList.toggle('alto-contraste', preferencias.contraste);
 
   el('fonte-valor').textContent = `${Math.round(NIVEIS_FONTE[preferencias.fonte] * 100)}%`;
