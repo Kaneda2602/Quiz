@@ -539,8 +539,13 @@ h1 {
   font-size: calc(10px * var(--fonte));
 }
 
-#quiz-fonte a {
+/* O contorno herdado de .texto-borda precisa ser repetido aqui: em link
+   visitado o Chrome pinta o -webkit-text-stroke com a cor do link, e o
+   traço de 0.5em vira um borrão amarelo depois do primeiro clique */
+#quiz-fonte a,
+#quiz-fonte a:visited {
   color: #fbd94a;
+  -webkit-text-stroke-color: #000;
 }
 
 /* Feedback, erro e botões: empilhados no celular */
