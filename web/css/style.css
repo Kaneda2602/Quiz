@@ -1055,11 +1055,6 @@ h1 {
     grid-column: 1 / -1;
   }
 
-  #quiz-enunciado,
-  #quiz-resultado {
-    font-size: calc(16px * var(--fonte));
-  }
-
   /* Resultado: um pouco maior, blocos mais espaçados e botões nos cantos */
   .resultado-cabecalho {
     gap: 16px;
@@ -1202,6 +1197,28 @@ h1 {
     width: 220px;
   }
 
+  /* Quiz sem o logo (só no desktop; no celular ele continua): o header sai
+     do fluxo (absolute) para a barra de progresso subir até o topo, e o botão
+     fica no canto direito, na mesma faixa da barra (altura = altura da barra
+     de 300px) e centralizado nela */
+  body:has(#tela-quiz:not([hidden])) .titulo {
+    display: none;
+  }
+
+  body:has(#tela-quiz:not([hidden])) header {
+    justify-content: flex-end;
+    position: absolute;
+    top: 16px; /* = padding-top do body */
+    left: 16px;
+    right: 16px;
+    width: auto;
+    height: calc(300px * 151 / 727);
+  }
+
+  body:has(#tela-quiz:not([hidden])) .botao-acessibilidade {
+    position: static;
+  }
+
   /* A moldura do box.png já ocupa 12px de cada lado: quase sem padding */
   .alternativa {
     padding: 0 6px;
@@ -1212,9 +1229,5 @@ h1 {
   .alternativa .letra {
     width: 28px;
     height: 28px;
-  }
-
-  #quiz-enunciado {
-    font-size: calc(14px * var(--fonte));
   }
 }
