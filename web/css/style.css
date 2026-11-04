@@ -1135,30 +1135,17 @@ h1 {
   }
 }
 
-/* Desktop: quiz em duas colunas para caber na tela sem rolar.
-   Esquerda: pergunta + alternativas. Direita: correção. Botões embaixo.
+/* Desktop: quiz numa coluna só, centralizada.
+   Pergunta, alternativas, correção (embaixo das alternativas) e botões.
    :not([hidden]) mantém a tela escondida quando não é a atual. */
 @media (min-width: 1024px) {
   #tela-quiz:not([hidden]) {
     display: grid;
-    grid-template-columns: minmax(0, 720px) minmax(0, 400px);
-    grid-template-areas:
-      "progresso    progresso"
-      "pergunta     lateral"
-      "alternativas lateral"
-      "acoes        acoes";
-    grid-template-rows: auto auto 1fr auto;
-    justify-content: center;
-    align-items: start;
-    gap: 16px 32px;
-  }
-
-  /* Antes de responder (correção escondida): uma coluna só, centralizada,
-     sem reservar espaço vazio para a correção. A lateral fica só com o erro. */
-  #tela-quiz:not([hidden]):has(#quiz-feedback[hidden]) {
     grid-template-columns: minmax(0, 720px);
     grid-template-areas: "progresso" "pergunta" "alternativas" "lateral" "acoes";
-    grid-template-rows: none;
+    justify-content: center;
+    align-items: start;
+    gap: 16px;
   }
 
   #quiz-progresso {
@@ -1177,6 +1164,10 @@ h1 {
   }
   .quiz-lateral {
     grid-area: lateral;
+  }
+  /* Correção na mesma largura da pergunta e das alternativas */
+  #quiz-feedback {
+    width: 100%;
   }
   .quiz-acoes {
     grid-area: acoes;
